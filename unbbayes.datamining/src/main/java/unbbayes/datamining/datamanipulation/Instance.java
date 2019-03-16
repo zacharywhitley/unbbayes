@@ -275,7 +275,10 @@ public class Instance implements Serializable {
 	 * @return The value as a string
 	 */
 	public String stringValue(int attIndex) {
-		if (instanceSet.attributeType[attIndex] == instanceSet.NOMINAL) {
+//		if (instanceSet.attributeType[attIndex] == instanceSet.NOMINAL) {
+//			return instanceSet.attributes[attIndex].value((int) data[attIndex]);
+//		}
+		if (instanceSet.attributes[attIndex].getAttributeType() == instanceSet.NOMINAL) {
 			return instanceSet.attributes[attIndex].value((int) data[attIndex]);
 		}
 		return String.valueOf(data[attIndex]);

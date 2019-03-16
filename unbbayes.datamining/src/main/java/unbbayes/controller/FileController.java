@@ -112,20 +112,21 @@ public class FileController
 
 	public void saveInstanceSet(File output, InstanceSet instanceSet,
 			int[] selectedAttributes) throws IOException {
+		
+		boolean compacted = instanceSet.counterIndex != -1;
+		this.saveInstanceSet(output, instanceSet, selectedAttributes, compacted);
+		
+	}
+	
+	public void saveInstanceSet(File output, InstanceSet instanceSet,
+			int[] selectedAttributes, boolean isCompactTextFormat) throws IOException {
 		Saver saver;
 		String fileName = output.getName();
-		boolean compacted;
-		
-		if (instanceSet.counterIndex == -1) {
-			compacted = false;
-		} else {
-			compacted = true;
-		}
 		
 		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
-			saver = new ArffSaver(output, instanceSet, selectedAttributes, compacted);
+			saver = new ArffSaver(output, instanceSet, selectedAttributes, isCompactTextFormat);
 		} else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
-			saver = new TxtSaver(output, instanceSet, selectedAttributes, compacted);
+			saver = new TxtSaver(output, instanceSet, selectedAttributes, isCompactTextFormat);
 		} else {
 			throw new IOException(resourceNaiveBayesian.getString("fileExtensionException"));
 		}

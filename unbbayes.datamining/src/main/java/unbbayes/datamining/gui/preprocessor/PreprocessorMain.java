@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
@@ -416,6 +417,7 @@ public class PreprocessorMain extends JInternalFrame
 		String SaveDialogTitle = resource.getString("saveFile");
 		File selectedFile = getFileFromUser(SaveDialogTitle);
 		
+		
 		/* Save file */
 		if (selectedFile != null) {
 			saveFile(selectedFile, selectedAttributes, inst);
@@ -451,19 +453,35 @@ public class PreprocessorMain extends JInternalFrame
 	private void saveFile(File selectedFile, int[] selectedAttributes,
 			InstanceSet instanceSet) {
 		try {
+			boolean isCompactTextFormat = false;
 			String fileName = selectedFile.getName();
 			String selectedFilter = fileChooser.getFileFilter().getDescription();
 			if (selectedFilter.equals("TxtFiles (*.txt)")) {
 				if (!fileName.regionMatches(true,fileName.length() - 4,".txt",0,4)) {
 					selectedFile = new File(selectedFile.getAbsolutePath()+".txt");
 				}
+
+				int option = JOptionPane.showOptionDialog(getContentPane(), 
+						resource.getString("compactedFile"), 
+						selectedFile.getName(), 
+						JOptionPane.YES_NO_OPTION, 
+						JOptionPane.QUESTION_MESSAGE, 
+						null, 
+						null, 
+						null
+					);
+				
+				isCompactTextFormat = option == JOptionPane.YES_OPTION;
+				
 			} else if (selectedFilter.equals("ArffFiles (*.arff)")) {
 				if (!fileName.regionMatches(true,fileName.length() - 5,".arff",0,5)) {
 					selectedFile = new File(selectedFile.getAbsolutePath()+".arff");
 				}
+
+				isCompactTextFormat = instanceSet.counterIndex != -1;
 			}
 			FileController.getInstance().saveInstanceSet(selectedFile,
-					instanceSet, selectedAttributes);
+					instanceSet, selectedAttributes, isCompactTextFormat);
 			statusBar.setText("Arquivo salvo com sucesso");
 		} catch (IOException ioe) {
 			statusBar.setText(resource.getString("errorWritingFile") +

@@ -7,14 +7,12 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * 
@@ -34,6 +32,7 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 
 	private NumberFormat numberFormatter = null;
 	private String binSplitter = "_to_";
+	private String binPrefix = "_";
 
 	/**
 	 * @param inst
@@ -116,7 +115,7 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 		
 		
 		// size of each bin should be proportional to distance between min and max
-      	float sizeBin = (max - min)/(numThresholds - 1);	// -1 because there will be a special bin for zero
+      	float sizeBin = (max /*- min*/)/(numThresholds - 1f);	// -1 because there will be a special bin for zero
 		
       	
 		// formatter to be used for numbers
@@ -129,22 +128,33 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 		List<Float> upperBounds = new ArrayList<Float>(numThresholds);
 		
 		// handle zero as a special bin
-		newAttribute.addValue(formatter.format(0f));
+		newAttribute.addValue(getBinPrefix() + formatter.format(0f));
 		upperBounds.add(0f);
 		
-		// create breakpoints from min to max
-		for (float currentBreak = sizeBin, previousBreak = 0f; currentBreak <= max; currentBreak += sizeBin) {
+		// create breakpoints 
+		for (float currentBreak = sizeBin, previousBreak = 0f; currentBreak <= max; ) {
 //			if (currentBreak <= 0f) {
 //				// zero was handled already
 //				continue;
 //			}
 			
 			// this bin starts from previous number and goes until current number (inclusive)
-			newAttribute.addValue( formatter.format(previousBreak) + getBinSplitter() + formatter.format(currentBreak) );
+			newAttribute.addValue( getBinPrefix() +  formatter.format(previousBreak) + getBinSplitter() + formatter.format(currentBreak) );
 			upperBounds.add(currentBreak);
 			
 			// next iteration will go from current bin number to next bin number.
 			previousBreak = currentBreak;
+			
+			if (currentBreak >= max) {
+				// reached max. Stop iteration
+				break;	
+			} else if (currentBreak + sizeBin >= max) {
+				// next iteration will reach max. Make sure max is upper bound.
+				currentBreak = max;
+			} else {
+				// increment normally
+				currentBreak += sizeBin;
+			}
 		}
 		
 		// insert attribute
@@ -224,6 +234,24 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 	 */
 	public void setBinSplitter(String binSplitter) {
 		this.binSplitter = binSplitter;
+	}
+
+	/**
+	 * @return 
+	 * this prefix will be included at beginning of names
+	 * of discretized states 
+	 */
+	public String getBinPrefix() {
+		return binPrefix;
+	}
+
+	/**
+	 * @param binPrefix 
+	 * this prefix will be included at beginning of names
+	 * of discretized states 
+	 */
+	public void setBinPrefix(String binPrefix) {
+		this.binPrefix = binPrefix;
 	}
 
 }

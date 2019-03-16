@@ -36,6 +36,7 @@ public class TxtSaver extends Saver{
 	private int counter = -1;
 	private int[] selectedAttributes;
 	private boolean counterAttribute;
+	private String splitter = "\t";
 
 	public TxtSaver(File output, InstanceSet instanceSet,
 			int[] selectedAttributes) throws IOException {
@@ -77,10 +78,13 @@ public class TxtSaver extends Saver{
 
 	protected void writeHeader() throws IOException	{
 		for (int i = 0; i < numAttributes; i++) {
-			writer.print(instanceSet.getAttribute(selectedAttributes[i]).
-					getAttributeName()+ " ");
+			writer.print(instanceSet.getAttribute(selectedAttributes[i]).getAttributeName());
+			if ((i + 1) < numAttributes) {
+				writer.print(getSplitter());
+			}
 		}
 		if (counterAttribute) {
+			writer.print(getSplitter());
 			writer.print(instanceSet.getCounterAttributeName());
 		}
 		writer.println();
@@ -94,9 +98,13 @@ public class TxtSaver extends Saver{
 			int attIndex;
 			for (int i = 0; i < numAttributes; i++) {
 				attIndex = selectedAttributes[i];
-				writer.print(instance.stringValue(attIndex) + " ");
+				writer.print(instance.stringValue(attIndex));
+				if ((i + 1) < numAttributes) {
+					writer.print(getSplitter());
+				}
 			}
 			if (counterAttribute) {
+				writer.print(getSplitter());
 				writer.print(instance.getWeight());
 			}
 			writer.println();
@@ -106,6 +114,22 @@ public class TxtSaver extends Saver{
 			writer.close();
 			return false;
 		}
+	}
+
+	/**
+	 * @return 
+	 * String that separates column.
+	 */
+	public String getSplitter() {
+		return splitter;
+	}
+
+	/**
+	 * @param splitter 
+	 * String that separates column.
+	 */
+	public void setSplitter(String splitter) {
+		this.splitter = splitter;
 	}
 
 

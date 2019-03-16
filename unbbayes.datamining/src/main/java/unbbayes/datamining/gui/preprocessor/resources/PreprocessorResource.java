@@ -88,6 +88,7 @@ public class PreprocessorResource extends ListResourceBundle {
 	{"stdDev","StdDev"},
 	{"nominal","Nominal"},
 	{"numeric","Numeric"},
+	{"compactedFile","Use compact count format?"},
 	{"noAttributeSelected","No attribute selected"},
 		// AttributeSelectionPanel
 		{"name2","Name"},

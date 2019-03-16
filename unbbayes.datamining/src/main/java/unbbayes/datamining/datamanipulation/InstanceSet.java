@@ -602,6 +602,7 @@ public class InstanceSet implements Serializable {
 		for (int i = 0; i < numInstances; i++) {
 			instances[i].setMissing(att);
 		}
+		attributeType[position] = att.getAttributeType();
 		
 		hasChanged = true;
 	}

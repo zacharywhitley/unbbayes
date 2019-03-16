@@ -89,6 +89,7 @@ public class PreprocessorResource_pt extends ListResourceBundle {
 	{"stdDev","Desvio Padrão"},
 	{"nominal","Nominal"},
 	{"numeric","Numérico"},
+	{"compactedFile","Usar formato compacto de contagem?"},
 	{"noAttributeSelected","Nenhum atributo selecionado"},
 		// AttributeSelectionPanel
 		{"name2","Nome"},

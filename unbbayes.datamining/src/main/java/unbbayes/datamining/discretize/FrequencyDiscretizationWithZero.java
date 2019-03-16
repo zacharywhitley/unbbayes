@@ -14,7 +14,6 @@ import java.util.List;
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * 
@@ -34,6 +33,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 
 	private NumberFormat numberFormatter = null;
 	private String binSplitter = "_to_";
+	private String binPrefix = "_";
 
 	/**
 	 * @param inst
@@ -177,7 +177,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		if (breakpointIndices.size() != (numThresholds - (hasZero?0:1))) {
 			throw new RuntimeException("Number of breakpoints generated with non-supervised discretization was " 
 								+ (breakpointIndices.size() + (hasZero?0:1)) + ", but required number was " + (numThresholds)
-								+ ". Please, reduce the number of thresholds.");
+								+ ". Please, change the number of thresholds.");
 		}
 		
 		// formatter to be used for numbers
@@ -186,14 +186,14 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		// add discrete states based on breakpoints
 		// handle zero as a special bin
 		float previousBinNumber = 0f;
-		newAttribute.addValue(formatter.format(previousBinNumber));
+		newAttribute.addValue(getBinPrefix() + formatter.format(previousBinNumber));
 		// build labels of discrete bins
 		// breakpoint[0], breakpoint[0]-to-breakpoint[1], breakpoint[1]-to-breakpoint[2], ...
 		for (int i = (hasZero?1:0); i < breakpointIndices.size(); i++) {
 			// extract value referred by the breakpoint
 			float currentBinNumber = sortedValues[breakpointIndices.get(i)];
 			// this bin starts from previous number and goes until current number (inclusive)
-			newAttribute.addValue( formatter.format(previousBinNumber) + getBinSplitter() + formatter.format(currentBinNumber));
+			newAttribute.addValue( getBinPrefix() + formatter.format(previousBinNumber) + getBinSplitter() + formatter.format(currentBinNumber));
 			// next iteration will go from current bin number to next bin number.
 			previousBinNumber = currentBinNumber;
 		}
@@ -272,5 +272,24 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	public void setBinSplitter(String binSplitter) {
 		this.binSplitter = binSplitter;
 	}
+
+	/**
+	 * @return 
+	 * this prefix will be included at beginning of names
+	 * of discretized states 
+	 */
+	public String getBinPrefix() {
+		return binPrefix;
+	}
+
+	/**
+	 * @param binPrefix 
+	 * this prefix will be included at beginning of names
+	 * of discretized states 
+	 */
+	public void setBinPrefix(String binPrefix) {
+		this.binPrefix = binPrefix;
+	}
+
 
 }
