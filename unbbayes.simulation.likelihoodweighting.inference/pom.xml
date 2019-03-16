@@ -6,7 +6,7 @@
 	<name>Likelihood Weighting</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.1.0</version>
+	<version>1.2.0-SNAPSHOT</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -239,7 +239,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.0.0</version>
+				<version>4.22.19-SNAPSHOT</version>
 			</dependency>
 			
 			<!-- This plugin has a dependency to, unbbayes.simulation.montecarlo.sampling plugin -->
