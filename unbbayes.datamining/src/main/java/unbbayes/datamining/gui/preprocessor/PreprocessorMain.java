@@ -460,7 +460,16 @@ public class PreprocessorMain extends JInternalFrame
 				if (!fileName.regionMatches(true,fileName.length() - 4,".txt",0,4)) {
 					selectedFile = new File(selectedFile.getAbsolutePath()+".txt");
 				}
+				
+			} else if (selectedFilter.equals("ArffFiles (*.arff)")) {
+				if (!fileName.regionMatches(true,fileName.length() - 5,".arff",0,5)) {
+					selectedFile = new File(selectedFile.getAbsolutePath()+".arff");
+				}
 
+				isCompactTextFormat = instanceSet.counterIndex != -1;
+			}
+			
+			if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
 				int option = JOptionPane.showOptionDialog(getContentPane(), 
 						resource.getString("compactedFile"), 
 						selectedFile.getName(), 
@@ -472,14 +481,8 @@ public class PreprocessorMain extends JInternalFrame
 					);
 				
 				isCompactTextFormat = option == JOptionPane.YES_OPTION;
-				
-			} else if (selectedFilter.equals("ArffFiles (*.arff)")) {
-				if (!fileName.regionMatches(true,fileName.length() - 5,".arff",0,5)) {
-					selectedFile = new File(selectedFile.getAbsolutePath()+".arff");
-				}
-
-				isCompactTextFormat = instanceSet.counterIndex != -1;
 			}
+			
 			FileController.getInstance().saveInstanceSet(selectedFile,
 					instanceSet, selectedAttributes, isCompactTextFormat);
 			statusBar.setText("Arquivo salvo com sucesso");
