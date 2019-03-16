@@ -152,7 +152,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		}
 		
 		// each non-zero bin should contain this number of elements
-		int expectedCountsPerBin = Math.round((float)numNonZeroValues / (numThresholds - 1));	// -1 in order to count for the 0 bin
+		int expectedCountsPerBin = (int)((float)numNonZeroValues / (numThresholds - 1f));	// -1 in order to count for the 0 bin
         
 		// list of inclusive breakpoint. E.g. if interval is X1toX2, then it will contain index to X2.
 		List<Integer> breakpointIndices = new ArrayList<Integer>(numThresholds);
@@ -171,14 +171,21 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 				breakpointIndices.add(distinctValuesStartIndex.get(i));
 				cumulativeCount = 0;	// reset counts
 			}
+			if (breakpointIndices.size() == (numThresholds - (hasZero?0:1))) {
+				// reached desired number of threshold.
+				// Include rest of data to last bin
+				breakpointIndices.set(breakpointIndices.size() -1, 
+						distinctValuesStartIndex.get(distinctValuesStartIndex.size() - 1));
+				break;
+			}
 		}
 		
 		// assertion. Breakpoint will not contain zero if data did not contain zero
-		if (breakpointIndices.size() != (numThresholds - (hasZero?0:1))) {
-			throw new RuntimeException("Number of breakpoints generated with non-supervised discretization was " 
-								+ (breakpointIndices.size() + (hasZero?0:1)) + ", but required number was " + (numThresholds)
-								+ ". Please, change the number of thresholds.");
-		}
+//		if (breakpointIndices.size() != (numThresholds - (hasZero?0:1))) {
+//			throw new RuntimeException("Number of breakpoints generated with non-supervised discretization was " 
+//								+ (breakpointIndices.size() + (hasZero?0:1)) + ", but required number was " + (numThresholds)
+//								+ ". Please, change the number of thresholds.");
+//		}
 		
 		// formatter to be used for numbers
 		NumberFormat formatter = getNumberFormatter();
