@@ -40,6 +40,7 @@ public interface ILongTaskProgressObservable {
 	 * It represents 100%.
 	 * @return the maximum number allowed for this long task progress. 
 	 * It represents 100%.
+	 * @deprecated implementations should directly notify observers with {@link #notityObservers(LongTaskProgressChangedEvent)}
 	 */
 	public int getMaxProgress();
 	
@@ -48,6 +49,7 @@ public interface ILongTaskProgressObservable {
 	 * It represents a percentage.
 	 * @return the current number of this long task progress. 
 	 * It represents a percentage.
+	 * @deprecated implementations should directly notify observers with {@link #notityObservers(LongTaskProgressChangedEvent)}
 	 */
 	public int getCurrentProgress();
 	
@@ -56,6 +58,7 @@ public interface ILongTaskProgressObservable {
 	 * It should be Math.round((float)currentProgress / maxProgress * 10000), 
 	 * a number between 0 and 10000.
 	 * @return the percentage of the progress done so far. 
+	 * @deprecated implementations should directly notify observers with {@link #notityObservers(LongTaskProgressChangedEvent)}
 	 */
 	public int getPercentageDone();
 	
@@ -64,6 +67,7 @@ public interface ILongTaskProgressObservable {
 	 * status of the long task progress.
 	 * @return a message with a description of the current 
 	 * status of the long task progress.
+	 * @deprecated implementations should directly notify observers with {@link #notityObservers(LongTaskProgressChangedEvent)}
 	 */
 	public String getCurrentProgressStatus();
 	
