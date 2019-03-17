@@ -311,16 +311,17 @@
 		<!-- PLOT-GRAPHICS -->
 
 		<!-- JUNIT -->
-		<dependency>
+<!-- 		<dependency> -->
 			<!--
 				JUnit is a simple framework to write repeatable tests. It is an
 				instance of the xUnit architecture for unit testing frameworks.
 				http://junit.sourceforge.net/
 			-->
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.1</version>
-		</dependency>
+			<!-- JUnit cannot be incorporated into GPL projects, because it is released under Eclipse public license, which is incompatible with GPL -->
+<!-- 			<groupId>junit</groupId> -->
+<!-- 			<artifactId>junit</artifactId> -->
+<!-- 			<version>4.1</version> -->
+<!-- 		</dependency> -->
 		<!-- JUNIT -->
 
 		<!-- JAXME/JAXB -->
@@ -391,11 +392,11 @@
 			providing Unicode and Globalization support for software
 			applications. Necessary for Protege. http://www.icu-project.org/
 		-->
-		<dependency>
-			<groupId>com.ibm.icu</groupId>
-			<artifactId>icu4j</artifactId>
-			<version>3.8</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.ibm.icu</groupId> -->
+<!-- 			<artifactId>icu4j</artifactId> -->
+<!-- 			<version>3.8</version> -->
+<!-- 		</dependency> -->
 		<!-- Necessary for Protege. -->
 		<!-- This is mebn dependency (plugin dependency)
 		<dependency>
