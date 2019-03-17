@@ -26,11 +26,11 @@ import cc.mallet.types.Dirichlet;
  * This version only supports discrete variables, and the higher order CPTs 
  * are expected to be count tables (parameters of Dirichlet-multinomial distribution)
  * which should be accessible from {@link unbbayes.prs.bn.ProbabilisticNetwork#getProperty(String)},
- * with the property name being {@link com.bbn.bn.io.CountCompatibleNetIO#DEFAULT_COUNT_TABLE_PREFIX} + {@link unbbayes.prs.INode#getName()}.
+ * with the property name being {@link CountCompatibleNetIO#DEFAULT_COUNT_TABLE_PREFIX} + {@link unbbayes.prs.INode#getName()}.
  * Means and standard deviations of marginals will be stored in {@link Node#setMean(double[])}
  * and {@link Node#setStandardDeviation(double[])}.
  * @author Shou Matsumoto
- * @see com.bbn.bn.io.CountCompatibleNetIO
+ * @see CountCompatibleNetIO
  */
 public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 
