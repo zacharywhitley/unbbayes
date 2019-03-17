@@ -156,7 +156,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			return this;
 		}
 	};
-	static{
+	static {
 //		ONE_STATE_PROBNODE = new ProbabilisticNode();
 		ONE_STATE_PROBNODE.setName("PROB_NODE_WITH_SINGLE_STATE");
 		// copy states
@@ -491,6 +491,114 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 		
+	};
+	
+	public static final IInferenceAlgorithmListener BACKUP_EVIDENCES_BEFORE_RUN_RESTORE_AFTER_RUN = new IInferenceAlgorithmListener() {
+		
+		/** Backup of hard evidences */
+		private Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
+		/** name of nodes in evidenceMap whose evidences are negative (indicate evidence NOT in a given state) */
+		private Set<String> negativeEvidenceNodeNames = new HashSet<String>();	
+		/** backup plan for cases when we could not create virtual nodes */
+		private Map<String, float[]> likelihoodMap = new HashMap<String, float[]>();	
+		
+		/** Backup evidences before run, because they will be lost on initialization of algorithm */
+		public void onBeforeRun(IInferenceAlgorithm algorithm) {
+			if (algorithm == null) {
+				Debug.println(getClass(), "Attempted to run listener for null algorithm");
+				return;
+			}
+			
+			if (!(algorithm instanceof JunctionTreeAlgorithm)) {
+				Debug.println(getClass(), "This inference algorithm listener only supports JunctionTreeAlgorithm: " + algorithm.getClass());
+				return;
+			}
+
+			evidenceMap.clear();
+			negativeEvidenceNodeNames.clear();
+			likelihoodMap.clear();
+			
+			for (Node node : algorithm.getNetwork().getNodes()) {
+				if (node == null 
+						|| !(node instanceof ProbabilisticNode)) {
+					continue;	// ignore null or non-probabilistic nodes
+				}
+
+				// keep track of evidences (note: at this point we know node is a ProbabilisticNode)
+				if (((ProbabilisticNode) node).hasEvidence()) {
+					if (((ProbabilisticNode) node).hasLikelihood()) {
+						// the following code was added here because we need current marginal to calculate soft evidence
+						// Enter the likelihood as virtual nodes
+						try {
+							// prepare list of nodes to add soft/likelihood evidence
+							List<INode> evidenceNodes = new ArrayList<INode>();
+							evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+							// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+							evidenceNodes.addAll(((JunctionTreeAlgorithm)algorithm).getLikelihoodExtractor().extractLikelihoodParents(algorithm.getNetwork(), node));
+							// create the virtual node
+							INode virtual = null;
+							try {
+								virtual = ((JunctionTreeAlgorithm)algorithm).addVirtualNode(algorithm.getNetwork(), evidenceNodes);
+								if (virtual != null) {
+									// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+									// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
+									evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+								}
+							} catch (Exception e) {
+								Debug.println(getClass(), "Could not create virtual node for " + node, e);
+								// backup plan: use old routine (although it is not entirely correct)
+								// backup the likelihood values
+								likelihoodMap.put(node.getName(), ((ProbabilisticNode) node).getLikelihood());
+								// putting in evidenceMap will mark this node as evidence (no matter what kind of evidence it is actually)
+								evidenceMap.put(node.getName(), 0);	
+							}
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					
+					} else {
+						// store hard evidence, so that it can be retrieved after reset
+						int evidenceIndex = ((ProbabilisticNode) node).getEvidence();
+						if (((ProbabilisticNode) node).getMarginalAt(evidenceIndex) == 0) {
+							// this is a "NOT" evidence (evidence about "NOT" in a given state)
+							negativeEvidenceNodeNames.add(node.getName());
+						}
+						evidenceMap.put(node.getName(), evidenceIndex);
+					}
+				}
+				
+			}
+		}
+		
+		/** Restore evidences backed up in {@link #onBeforeRun(IInferenceAlgorithm)} */
+		public void onAfterRun(IInferenceAlgorithm algorithm) {
+
+			if (algorithm == null) {
+				Debug.println(getClass(), "Attempted to run listener for null algorithm");
+				return;
+			}
+			
+			if (!(algorithm instanceof JunctionTreeAlgorithm)) {
+				Debug.println(getClass(), "This inference algorithm listener only supports JunctionTreeAlgorithm: " + algorithm.getClass());
+				return;
+			}
+			
+			// Enter the list of evidence again
+			for (String name : evidenceMap.keySet()) {
+				// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
+				((TreeVariable)((JunctionTreeAlgorithm)algorithm).getNet().getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
+
+				if (likelihoodMap.containsKey(name)) {
+					// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
+					// so, use old routine for likelihood evidence
+					((TreeVariable)((JunctionTreeAlgorithm)algorithm).getNet().getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+				}
+			}
+		}
+		public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+		public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
+		public void onAfterReset(IInferenceAlgorithm algorithm) {}
+		public void onAfterPropagate(IInferenceAlgorithm algorithm) {}
 	};
 	
 	/**
