@@ -82,7 +82,8 @@ public class LikelihoodWeightingInference extends AbstractInferenceAlgorithm {
 		super();
 		this.lwSampling= new LikelihoodWeightingSampling();
 		this.setNTrials(100000);
-		this.addInferencceAlgorithmListener(DEFAULT_LIKELIHOOD_WEIGHTING_LISTENER);
+		// uncomment following line in order to start generating file backup of samples
+//		this.addInferencceAlgorithmListener(DEFAULT_LIKELIHOOD_WEIGHTING_LISTENER);
 	}
 
 	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
