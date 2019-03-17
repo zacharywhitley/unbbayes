@@ -21,6 +21,7 @@
 package unbbayes.simulation.montecarlo.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -37,18 +38,18 @@ import unbbayes.prs.Node;
  * 
  *         To change this generated comment go to Window>Preferences>Java>Code
  *         Generation>Code and Comments
+ * @author Shou Matsumoto
+ * 			Minor changes to allow access as API from non-swing environment
  */
 public class MonteCarloIO {
 
 	private byte[][] matrix;
 
-	private File file;
+	private File file = null;
 
-	private PrintStream ps;
+//	private PrintStream ps;
 
 	public MonteCarloIO(byte[][] matrix) throws IOException {
-		file = getFile();
-		ps = new PrintStream(new FileOutputStream(file));
 		this.matrix = matrix;
 	}
 
@@ -61,7 +62,14 @@ public class MonteCarloIO {
 	 *            The probabilistic network that was sampled.
 	 */
 	public void makeFile(List<Node> sampledNodeOrder) {
-		makeFirstLine(sampledNodeOrder);
+		
+		PrintStream ps;
+		try {
+			ps = new PrintStream(new FileOutputStream(getFile()));
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		makeFirstLine(ps, sampledNodeOrder);
 		Node node;
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < sampledNodeOrder.size(); j++) {
@@ -76,7 +84,7 @@ public class MonteCarloIO {
 		}
 	}
 
-	private void makeFirstLine(List<Node> sampledNodeOrder) {
+	protected void makeFirstLine(PrintStream ps, List<Node> sampledNodeOrder) {
 		Node node;
 		for (int i = 0; i < sampledNodeOrder.size(); i++) {
 			node = sampledNodeOrder.get(i);
@@ -89,7 +97,21 @@ public class MonteCarloIO {
 		}
 	}
 
-	private File getFile() {
+	public File getFile() {
+		if (file != null) {
+			return file;
+		}
+		
+		return requestFile();
+	}
+
+	/**
+	 * request file from user
+	 * @return : file
+	 * @deprecated use {@link #setFile(File)} instead
+	 */
+	protected File requestFile() {
+		// TODO remove GUI code from IO classes
 		String[] nets = new String[] { "txt" };
 		FileHistoryController fileHistoryController = FileHistoryController.getInstance();
 		;
@@ -106,6 +128,13 @@ public class MonteCarloIO {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @param file the file to set
+	 */
+	public void setFile(File file) {
+		this.file = file;
 	}
 
 }
