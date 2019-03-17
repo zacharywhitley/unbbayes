@@ -52,12 +52,14 @@ public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	 * jth node in the ith sampled state set. To get the number of times the 
 	 * ith set of states was sampled use <code>getStatesSetTimesSampled()</code>.
 	 * @return The generated compact sample matrix.
+	 * @deprecated use {@link #getSampledStatesMatrix()}
 	 */
 	public byte[][] getSampledStatesCompactMatrix();
 	
 	/**
 	 * The number of times the ith set of states was sampled. 
 	 * @return The number of times the ith set of states was sampled.
+	 * @deprecated use {@link #getSampledStatesMatrix()}
 	 */
 	public int[] getStatesSetTimesSampled();
 	
@@ -65,6 +67,7 @@ public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	 * Returns the generated sample map, with key = linear coord (representing the sates sampled) and 
 	 * value = number of times this key was sampled.
 	 * @return The generated sample map.
+	 * @deprecated use {@link #getSampledStatesMatrix()}
 	 */
 	public Map<Integer,Integer> getSampledStatesMap();
 	
@@ -89,6 +92,7 @@ public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
 	 * each node).
 	 * @return The corresponding linear coordinate.
+	 * @deprecated
 	 */
 	public int getLinearCoord(int multidimensionalCoord[]);
 
@@ -97,6 +101,7 @@ public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	 * 
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
+	 * @deprecated
 	 */
 	public byte[] getMultidimensionalCoord(int linearCoord);
 
