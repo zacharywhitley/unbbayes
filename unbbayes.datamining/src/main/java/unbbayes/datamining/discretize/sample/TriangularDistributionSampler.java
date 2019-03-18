@@ -1,20 +1,9 @@
-/**
- * 
- */
 package unbbayes.datamining.discretize.sample;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.distribution.TriangularDistribution;
-import org.apache.log4j.Logger;
 
-import unbbayes.datamining.datamanipulation.Attribute;
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**

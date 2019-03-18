@@ -234,16 +234,24 @@ public class AttributeStats  {
 		result.append("Missing Count " + missingCount + '\n');
 		result.append("Missing Count Weighted " + missingCountWeighted + '\n');
 		result.append("Distinct Count " + distinctCount + '\n');
-		result.append("Counts ");
-		for (int i=0;i<nominalCounts.length;i++) {
-			result.append(nominalCounts[i]+" ");
+		if (nominalCounts != null) {
+			result.append("Counts ");
+			for (int i=0;i<nominalCounts.length;i++) {
+				result.append(nominalCounts[i]+" ");
+			}
+			result.append("\n");
 		}
-		result.append("\n");
-		result.append("Counts Weighted");
-		for (int i=0;i<nominalCountsWeighted.length;i++) {
-			result.append(nominalCountsWeighted[i]+" ");
+		if (nominalCountsWeighted != null) {
+			result.append("Counts Weighted");
+			for (int i=0;i<nominalCountsWeighted.length;i++) {
+				result.append(nominalCountsWeighted[i]+" ");
+			}
+			result.append("\n");
 		}
-		result.append("\n");
+		
+		if (attributeType == NUMERIC) {
+			result.append(getNumericStats().toString());
+		}
 		
 		return result.toString();
 	}

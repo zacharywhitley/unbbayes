@@ -45,7 +45,8 @@ public class TxtLoader extends Loader {
 	/**
 	 * Reads a TXT file from a reader.
 	 * @param file
-	 * @param numLines Desired number of lines to count
+	 * @param numLines Desired number of lines to count.
+	 * If -1, then all lines will be loaded.
 	 *
 	 * @exception IOException if the TXT file is not read
 	 * successfully

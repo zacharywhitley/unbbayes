@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.BorderLayout;
@@ -11,7 +8,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.discretize.DiscretizationWrapper;
 import unbbayes.datamining.discretize.IDiscretization;
@@ -25,6 +21,8 @@ import unbbayes.datamining.discretize.sample.UniformDistributionSampler;
  */
 public class SamplingPanel extends JPanel {
 
+	private static final long serialVersionUID = 2919071747185755577L;
+	
 	@SuppressWarnings("rawtypes")
 	private JComboBox discretizationTypeComboBox;
 	private InstanceSet instanceSet;

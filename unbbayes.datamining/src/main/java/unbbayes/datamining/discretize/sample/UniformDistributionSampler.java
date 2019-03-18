@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.datamining.discretize.sample;
 
 import java.util.ArrayList;
@@ -11,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.apache.commons.math3.distribution.TriangularDistribution;
 import org.apache.log4j.Logger;
 
 import unbbayes.datamining.datamanipulation.Attribute;
