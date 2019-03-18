@@ -140,4 +140,8 @@ public class EntropyDiscretization implements IDiscretization
 			b[i + 1] = temp;
 		}
 	}
+
+	public String getName() {
+		return "Entropy";
+	}
 }

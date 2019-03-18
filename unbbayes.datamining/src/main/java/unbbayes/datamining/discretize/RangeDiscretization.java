@@ -113,4 +113,12 @@ public class RangeDiscretization implements IDiscretization
 	public InstanceSet getInstances()
 	{	return inst;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.datamining.discretize.IDiscretization#getName()
+	 */
+	public String getName() {
+		return "Range";
+	}
 }

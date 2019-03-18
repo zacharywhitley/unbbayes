@@ -240,7 +240,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 			if (numberFormatter == null) {
 				DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 				dfs.setDecimalSeparator('.');
-				numberFormatter = new DecimalFormat("0.00#", dfs);
+				numberFormatter = new DecimalFormat("0.0###", dfs);
 			}
 			return numberFormatter;
 		}
@@ -296,6 +296,14 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	 */
 	public void setBinPrefix(String binPrefix) {
 		this.binPrefix = binPrefix;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.datamining.discretize.IDiscretization#getName()
+	 */
+	public String getName() {
+		return "Frequency (single bin for zeros)";
 	}
 
 

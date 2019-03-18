@@ -151,4 +151,12 @@ public class FrequencyDiscretization implements IDiscretization
 	public InstanceSet getInstances()
 	{	return inst;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.datamining.discretize.IDiscretization#getName()
+	 */
+	public String getName() {
+		return "Frequency";
+	}
 }

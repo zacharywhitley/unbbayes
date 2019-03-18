@@ -76,6 +76,7 @@ public class PreprocessorResource extends ListResourceBundle {
 	{"missing","Missing: "},
 	{"type","Type: "},
 	{"discretizeAttribute","Discretize attribute ..."},
+	{"sampleAttribute","Sample attribute ..."},
 	{"instancesEditor","Instances Editor from Selected Attributes"},
 	{"selectedAttributes","Only selected attributes will be used by Instances Editor"},
 	{"label","Label"},

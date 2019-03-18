@@ -77,6 +77,7 @@ public class PreprocessorResource_pt extends ListResourceBundle {
 	{"missing","Valores faltantes: "},
 	{"type","Tipo: "},
 	{"discretizeAttribute","Discretizar atributo ..."},
+	{"sampleAttribute","Gerar amostra do atributo..."},
 	{"instancesEditor","Editor de instâncias para atributos selecionados"},
 	{"selectedAttributes","Só os atributos selecionados serão utilizados pelo editor de instâncias"},
 	{"label","Valor"},

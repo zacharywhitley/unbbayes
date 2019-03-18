@@ -45,7 +45,7 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 	 * (non-Javadoc)
 	 * @see unbbayes.datamining.discretize.RangeDiscretization#discretizeAttribute(unbbayes.datamining.datamanipulation.Attribute, int)
 	 */
-	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception {	
+	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception {
 		
 		// nothing to do if no attribute was specified
 		if (att == null) {
@@ -196,7 +196,7 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 			if (numberFormatter == null) {
 				DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 				dfs.setDecimalSeparator('.');
-				numberFormatter = new DecimalFormat("0.00#", dfs);
+				numberFormatter = new DecimalFormat("0.0###", dfs);
 			}
 			return numberFormatter;
 		}
@@ -252,6 +252,15 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 	 */
 	public void setBinPrefix(String binPrefix) {
 		this.binPrefix = binPrefix;
+	}
+	
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.datamining.discretize.IDiscretization#getName()
+	 */
+	public String getName() {
+		return "Range (single bin for zeros)";
 	}
 
 }

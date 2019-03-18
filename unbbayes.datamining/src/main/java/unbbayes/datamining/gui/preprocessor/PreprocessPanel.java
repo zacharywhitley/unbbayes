@@ -32,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -46,6 +47,8 @@ import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Stats;
+import unbbayes.datamining.discretize.sample.ISampler;
+import unbbayes.util.Debug;
 import unbbayes.util.GraphPaperLayout;
 
 public class PreprocessPanel extends JPanel
@@ -213,7 +216,7 @@ public class PreprocessPanel extends JPanel
     attributeInformationPanel.setBorder(titledBorder3);
     jPanel27.setLayout(borderLayout35);
     numericAttributePanel.setLayout(gridLayout4);
-    discretizeButton.setEnabled(false);
+    discretizeButton.setEnabled(true);
     discretizeButton.setText(resource.getString("discretizeAttribute"));
     discretizeButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -412,12 +415,13 @@ public class PreprocessPanel extends JPanel
                   {   selectedAttribute = i;
                       Attribute att = instances.getAttribute(selectedAttribute);
                       int type = att.getAttributeType();
-                      if (type == Attribute.NOMINAL)
-                      {   jLabel12.setText(resource.getString("nominal"));
-                          discretizeButton.setEnabled(false);
-                      }
-                      else
-                      {   jLabel12.setText(resource.getString("numeric"));
+                      if (type == Attribute.NOMINAL) {   
+                    	  jLabel12.setText(resource.getString("nominal"));
+//                          discretizeButton.setEnabled(false);
+                    	  discretizeButton.setText(resource.getString("sampleAttribute"));
+                      } else {   
+                    	  jLabel12.setText(resource.getString("numeric"));
+                      	  discretizeButton.setText(resource.getString("discretizeAttribute"));
                           discretizeButton.setEnabled(true);
                       }
                       jLabel10.setText(att.getAttributeName());
@@ -437,11 +441,57 @@ public class PreprocessPanel extends JPanel
 
   //Chama editor de inst�ncias
 
-  void discretizeButton_actionPerformed(ActionEvent e)
-  {   new DiscretizationPanel(reference,instances,instances.getAttribute(selectedAttribute));
+  void discretizeButton_actionPerformed(ActionEvent e) {
+	  Attribute attribute = instances.getAttribute(selectedAttribute);
+	  if (attribute.isNumeric()) {
+		  new DiscretizationPanel(reference, instances, attribute);
+	  } else if (attribute.isNominal()) {
+		  // "invert" discretization
+		  showSamplingDialog(reference, instances, attribute);
+	  }
+	  
   }
 
-  public AttributeSelectionPanel getAttributePanel()
+    /**
+     * Perform sampling: the reverse of discretization
+     * @see #discretizeButton_actionPerformed(ActionEvent)
+     */
+	protected void showSamplingDialog(PreprocessorMain reference, InstanceSet instances, Attribute attribute) {
+		
+//		SamplingPanel samplingPanel = new SamplingPanel(reference, instances, attribute);
+		SamplingPanel samplingPanel = new SamplingPanel(instances);
+		  
+		int option = JOptionPane.showInternalConfirmDialog(reference, samplingPanel, 
+						"Sampling " + attribute.getAttributeName(),
+						JOptionPane.OK_CANCEL_OPTION);
+		  
+		if ( option != JOptionPane.OK_OPTION ) {
+			Debug.println(getClass(), "Canceled sampling");
+			return;
+		}
+		
+		// extract the sampler, which reuses same interface of discretization
+		ISampler sampler = samplingPanel.getSelectedSampler();
+
+		try {
+			// update the configuration
+			sampler.setPrefix(samplingPanel.getPrefixTextField().getText());
+			sampler.setSuffix(samplingPanel.getSuffixTextField().getText());
+			sampler.setSplitter(samplingPanel.getSplitterTextField().getText());
+			
+			// running discretization will "undo" discretization
+			sampler.discretizeAttribute( attribute, -1 );
+			reference.updateInstances( sampler.getInstances() );
+			reference.setStatusBar( sampler.getName() + ": success" );
+		} catch (Exception e) {
+			Debug.println(getClass(), "Failed to use sampler", e);
+			reference.setStatusBar(e.getMessage());
+		}
+		
+	}
+	
+	
+public AttributeSelectionPanel getAttributePanel()
   {
     return attributePanel;
   }

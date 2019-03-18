@@ -43,6 +43,13 @@ public interface IDiscretization {
 	 * @throws Exception
 	 */
 	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception;
+	
+	/**
+	 * @return
+	 * Name of the discretizer
+	 */
+	public String getName();
+	
 }
 
 /*public class Discretization
