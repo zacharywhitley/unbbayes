@@ -118,13 +118,14 @@ public class LearningPNEditionDialog extends JDialog {
                     	return;
                     }
                	}
-               	for(int i = 0; i < net.getNodeCount() && close; i++){
-                     node = net.getNodeAt(i);
-                    if(node.getChildren().size() == 0 && node.getParents().size() == 0){
-                    	JOptionPane.showMessageDialog(null,"Todo no deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);
-                    	return;
-                    }
-               	}
+            	// following restriction is not valid anymore, because core now supports disconnected BN
+//               	for(int i = 0; i < net.getNodeCount() && close; i++){
+//                     node = net.getNodeAt(i);
+//                    if(node.getChildren().size() == 0 && node.getParents().size() == 0){
+//                    	JOptionPane.showMessageDialog(null,"Todo no deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);
+//                    	return;
+//                    }
+//               	}
                 setVisible(false);
                 dispose();
             }
