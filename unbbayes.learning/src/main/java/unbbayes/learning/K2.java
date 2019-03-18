@@ -22,6 +22,7 @@
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
@@ -36,10 +37,10 @@ import unbbayes.prs.bn.LearningNode;
 
 public class K2 extends K2Toolkit{
 
-    private ArrayList<Node> variablesVector;  
+    private List<Node> variablesVector;  
     
     
-    public K2(ArrayList<Node> variables, int[][] dataBase, int vector[], long 
+    public K2(List<Node> variables, int[][] dataBase, int vector[], long 
             caseNumber, String metric, String param, boolean compacted){    	
     	Object[]  zMax;
     	LearningNode z;

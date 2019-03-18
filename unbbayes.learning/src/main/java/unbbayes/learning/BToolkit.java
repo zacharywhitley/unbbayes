@@ -21,6 +21,7 @@
 package unbbayes.learning;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
@@ -31,7 +32,7 @@ public abstract class BToolkit extends PonctuationToolkit{
 	protected double[][] gMatrix;
     protected boolean[] forefathers;
     protected boolean[] descendants;
-    protected ArrayList<Node> variablesVector;
+    protected List<Node> variablesVector;
     
 	protected double[][] getGMatrix(){	
       return new double[variablesVector.size()][variablesVector.size()];

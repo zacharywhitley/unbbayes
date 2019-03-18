@@ -21,16 +21,28 @@ import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
  */
 public class TextModeLearningToolkit extends LearningToolkit {
 
-    public TextModeLearningToolkit(ProbabilisticNetwork net, List<LearningNode> variables){
+    private int classVariableIndex = -1;
+    
+ 
+	private String[] paradigmAlgorithmMetricParam = {
+			AlgorithmController.PARADIGMS.Ponctuation.name(),	// scoring paradigm
+			AlgorithmController.SCORING_ALGORITHMS.K2.name(),	// K2 algorithm
+			AlgorithmController.METRICS.MDL.name(),				// MDL metric
+			"1"													// default value of parameter is 1
+		};
+
+	public TextModeLearningToolkit(ProbabilisticNetwork net, List<LearningNode> variables){
     	
-    	for (Node n : variables) { 
-    		Node original = net.getNode(n.getName());
-    		n.removeStates();
-    		for (int i = 0; i < original.getStatesSize(); i++){
-    			String state = original.getStateAt(i);
-    			n.appendState(state);
-    		}
-    	}
+		if (net != null) {
+			for (Node n : variables) { 
+				Node original = net.getNode(n.getName());
+				n.removeStates();
+				for (int i = 0; i < original.getStatesSize(); i++){
+					String state = original.getStateAt(i);
+					n.appendState(state);
+				}
+			}
+		}
     	
     	setEmptyNet(net);
     	this.setVariables(variables);
@@ -97,7 +109,26 @@ public class TextModeLearningToolkit extends LearningToolkit {
 	 * @see #getFrequencies(LearningNode, List)
 	 * @see #getProbability(float[][], LearningNode)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ProbabilisticNetwork buildNet(boolean learnNewArcs) {
+		
+		// perform structure learning if it was asked
+		if (learnNewArcs) {
+			// the class varible to be used in augmented learning
+			int classVarIndex = getClassVariableIndex();
+			if (classVarIndex < 0) {
+				// perform non-augmented structure learning
+				new AlgorithmController(
+						(List)getVariables(), getDataBase(), getVector(), getCaseNumber(), getParadigmAlgorithmMetricParam(), isCompacted());
+			} else {
+				// augmented structure learning
+				new AlgorithmController(
+						(List)getVariables(), getDataBase(), getVector(), getCaseNumber(), getParadigmAlgorithmMetricParam(), isCompacted(), 
+						classVarIndex);
+			}
+			
+		}
+		
 		ProbabilisticNetwork topology = getEmptyNet(); 
 		
     	if (!learnNewArcs) {
@@ -315,5 +346,54 @@ for2:       for (int j = 0; j < parentsLength; j++) {
 	 */
 	public void setCompacted(boolean compacted) {
 		this.compacted = compacted;
+	}
+
+	/**
+	 * @return 
+	 * index in {@link #getVariables()}
+	 * used in order to force the specified variable to be a class variable.
+	 * A class variable is used in augmented structure learning for 
+	 * efficiency.
+	 * Negative values indicate that class variables are disabled.
+	 * @see #buildNet(boolean)
+	 * @see AlgorithmController
+	 */
+	public int getClassVariableIndex() {
+		return classVariableIndex;
+	}
+
+	/**
+	 * @param classVariableIndex 
+	 * set this value to some index in {@link #getVariables()}
+	 * in order to force the specified variable to be a class variable.
+	 * A class variable is used in augmented structure learning for 
+	 * efficiency.
+	 * Set it to negative in order to disable class variable.
+	 * @see #buildNet(boolean)
+	 * @see AlgorithmController
+	 */
+	public void setClassVariableIndex(int classVariableIndex) {
+		this.classVariableIndex = classVariableIndex;
+	}
+
+	/**
+	 * @return
+	 * the pamp (paradigm - algorithm - metric- parameter value) array
+	 * to be passed to {@link AlgorithmController}
+	 * at {@link #buildNet(boolean)}
+	 */
+	public String[] getParadigmAlgorithmMetricParam() {
+		return paradigmAlgorithmMetricParam;
+	}
+
+	/**
+	 * @param paradigmAlgorithmMetricParam 
+	 * the pamp (paradigm - algorithm - metric- parameter value) array
+	 * to be passed to {@link AlgorithmController}
+	 * at {@link #buildNet(boolean)}
+	 */
+	public void setParadigmAlgorithmMetricParam(
+			String[] paradigmAlgorithmMetricParam) {
+		this.paradigmAlgorithmMetricParam = paradigmAlgorithmMetricParam;
 	} 
 }

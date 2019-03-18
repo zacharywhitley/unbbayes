@@ -29,7 +29,7 @@ public class TextModeConstructionController {
 	private int[] vector;
 	private int[][] matrix;
 	private long caseNumber;
-	private boolean compacted;
+	private boolean compacted = false;
 
 	public TextModeConstructionController(File file, ProbabilisticNetwork net) throws IOException {
 		InputStreamReader isr = new InputStreamReader(new FileInputStream(file));

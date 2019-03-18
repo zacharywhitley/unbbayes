@@ -21,6 +21,7 @@
 package unbbayes.learning;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
@@ -30,7 +31,7 @@ import unbbayes.util.SetToolkit;
 public abstract class K2Toolkit extends PonctuationToolkit{
 	
      
-    protected void constructPredecessors(ArrayList<Node> list){ 
+    protected void constructPredecessors(List<Node> list){ 
         LearningNode aux;
         int length = list.size();
         for(int i = length - 1; i > 0  ; i--){

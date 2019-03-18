@@ -21,6 +21,7 @@
 package unbbayes.learning;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 
@@ -33,40 +34,52 @@ import unbbayes.prs.Node;
  */
 public class AlgorithmController{
 	
+	/** Available values in pamp array at paradigm position (0) */
+	public enum PARADIGMS {Ponctuation,IC};	
+	/** Available values in pamp array at algorithm position (1) */
+	public enum SCORING_ALGORITHMS {K2,B};
+	/** Available values in pamp array at metric position (2) */
+	public enum METRICS {MDL,GH, GHS};		
+	
+	/** IC algorithm available for pamp array at algorithm position (1) */
+	public static final String INDEPENDENCE_ALGORITHM_CBLA = "CBL-A";  
+	/** IC algorithm available for pamp array at algorithm position (1) */
+	public static final String INDEPENDENCE_ALGORITHM_CBLB = "CBLB";  
+	
 	/**
 	 * 
 	 */
-	public AlgorithmController(ArrayList<Node> variables,int[][] matrix, int[] vector,
+	public AlgorithmController(List<Node> variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted){	        	
-	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
-	        	if(pamp[1].equalsIgnoreCase("k2")){
+	        if(pamp[0].equalsIgnoreCase(PARADIGMS.Ponctuation.name())){
+	        	if(pamp[1].equalsIgnoreCase(SCORING_ALGORITHMS.K2.name())){
 	        		K2 k2 = new K2(variables, matrix, vector, caseNumber,pamp[2],pamp[3],compacted);	        		
 	        	}
-	        	else if(pamp[1].equalsIgnoreCase("B")){
+	        	else if(pamp[1].equalsIgnoreCase(SCORING_ALGORITHMS.B.name())){
 	        		B b = new B(variables, matrix, vector,caseNumber,pamp[2], pamp[3],compacted);	        			
 	        	}        		        		        	
-	        } else if (pamp[0].equalsIgnoreCase("IC")){ 
-	        	if(pamp[1].equalsIgnoreCase("CBL-A")){
+	        } else if (pamp[0].equalsIgnoreCase(PARADIGMS.IC.name())){ 
+	        	if(pamp[1].equalsIgnoreCase(INDEPENDENCE_ALGORITHM_CBLA)){
 	        		CBLA cblA = new CBLA(variables,matrix,vector,caseNumber,pamp[3],compacted);	        		
-	        	} else if(pamp[1].equalsIgnoreCase("CBL-B")){
+	        	} else if(pamp[1].equalsIgnoreCase(INDEPENDENCE_ALGORITHM_CBLB)){
 	        		CBLB cblB = new CBLB(variables,matrix,vector,caseNumber,pamp[3],compacted);	        		
 	        	}	        	
 	        }	        
 	} 
 	
-	public AlgorithmController(ArrayList<Node> variables,int[][] matrix, int[] vector,
+	public AlgorithmController(List<Node> variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted, int classex){	        	
-	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
-	        	if(pamp[1].equalsIgnoreCase("k2")){
+	        if(pamp[0].equalsIgnoreCase(PARADIGMS.Ponctuation.name())){
+	        	if(pamp[1].equalsIgnoreCase(SCORING_ALGORITHMS.K2.name())){
 	        		new K2(variables, matrix, vector, caseNumber,pamp[2],pamp[3],compacted);	        		
 	        	}
-	        	else if(pamp[1].equalsIgnoreCase("B")){
+	        	else if(pamp[1].equalsIgnoreCase(SCORING_ALGORITHMS.B.name())){
 	        		new B(variables, matrix, vector,caseNumber,pamp[2], pamp[3],compacted);	        			
 	        	}        		        		        	
-	        } else if (pamp[0].equalsIgnoreCase("IC")){ 
-	        	if(pamp[1].equalsIgnoreCase("CBL-A")){
+	        } else if (pamp[0].equalsIgnoreCase(PARADIGMS.IC.name())){ 
+	        	if(pamp[1].equalsIgnoreCase(INDEPENDENCE_ALGORITHM_CBLA)){
 	        		new CBLA(variables,matrix,vector,caseNumber,pamp[3],compacted);	        		
-	        	} else if(pamp[1].equalsIgnoreCase("CBL-B")){
+	        	} else if(pamp[1].equalsIgnoreCase(INDEPENDENCE_ALGORITHM_CBLB)){
 	        		new CBLB(variables,matrix,vector,caseNumber,pamp[3],compacted,classex);	        		
 	        	}	        	
 	        }	        

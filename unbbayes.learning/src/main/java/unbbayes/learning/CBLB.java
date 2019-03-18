@@ -21,6 +21,7 @@
 package unbbayes.learning;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
@@ -29,7 +30,7 @@ public class CBLB extends CBLToolkit {
 
 	private ArrayList<int[]> esFinal;
 
-	public CBLB( ArrayList<Node> variables, int[][] dataBase, int[] vector,
+	public CBLB( List<Node> variables, int[][] dataBase, int[] vector,
 			long caseNumber, String param, boolean compacted) {
 		this.variablesVector = variables;
 		double epsilon;
@@ -55,7 +56,7 @@ public class CBLB extends CBLToolkit {
 		}
 	}
 
-	public CBLB( ArrayList<Node> variables, int[][] dataBase, int[] vector,
+	public CBLB( List<Node> variables, int[][] dataBase, int[] vector,
 			long caseNumber, String param, boolean compacted, int classex) {
 		this.variablesVector = variables;
 		esFinal = new ArrayList();

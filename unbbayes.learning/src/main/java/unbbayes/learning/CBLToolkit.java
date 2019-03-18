@@ -37,7 +37,7 @@ import unbbayes.prs.bn.LearningNode;
  */
 public abstract class CBLToolkit extends LearningToolkit {
 
-	protected ArrayList<Node> variablesVector;
+	protected List<Node> variablesVector;
 	protected double epsilon;
 	protected ArrayList<int[]> es;
 	protected ArrayList<Object[]> separators;
