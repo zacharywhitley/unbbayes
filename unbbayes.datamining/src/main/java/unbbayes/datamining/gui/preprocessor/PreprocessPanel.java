@@ -216,7 +216,7 @@ public class PreprocessPanel extends JPanel
     attributeInformationPanel.setBorder(titledBorder3);
     jPanel27.setLayout(borderLayout35);
     numericAttributePanel.setLayout(gridLayout4);
-    discretizeButton.setEnabled(true);
+    discretizeButton.setEnabled(false);
     discretizeButton.setText(resource.getString("discretizeAttribute"));
     discretizeButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -417,7 +417,7 @@ public class PreprocessPanel extends JPanel
                       int type = att.getAttributeType();
                       if (type == Attribute.NOMINAL) {   
                     	  jLabel12.setText(resource.getString("nominal"));
-//                          discretizeButton.setEnabled(false);
+                          discretizeButton.setEnabled(true);
                     	  discretizeButton.setText(resource.getString("sampleAttribute"));
                       } else {   
                     	  jLabel12.setText(resource.getString("numeric"));
