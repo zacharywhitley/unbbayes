@@ -120,11 +120,13 @@ public class TextModeLearningToolkit extends LearningToolkit {
 				// perform non-augmented structure learning
 				new AlgorithmController(
 						(List)getVariables(), getDataBase(), getVector(), getCaseNumber(), getParadigmAlgorithmMetricParam(), isCompacted());
-			} else {
-				// augmented structure learning
+			} else {	// class variable was specified
+				
+				// Bayes net augmented structure learning (BAN)
 				new AlgorithmController(
 						(List)getVariables(), getDataBase(), getVector(), getCaseNumber(), getParadigmAlgorithmMetricParam(), isCompacted(), 
 						classVarIndex);
+				
 			}
 			
 		}
@@ -138,7 +140,7 @@ public class TextModeLearningToolkit extends LearningToolkit {
 				var.getParentNodes().clear();
 				var.clearAdjacents();
 			}
-    	} 
+    	}
     	
     	// just create new instance
     	setLearnedNet(this.instantiateProbabilisticNetwork(getVariables()));
@@ -168,6 +170,16 @@ public class TextModeLearningToolkit extends LearningToolkit {
     				getLearnedNet().getEdges().add(edge);
     			} 
     		}   
+    	} else {
+			// adjust position of nodes without using specific topology
+    		ProbabilisticNetwork net = getLearnedNet();
+    		double pivotX = 0, pivotY = 0;
+    		for (int nodeIndex = 0; nodeIndex < net.getNodeCount(); nodeIndex++) {
+    			Node n = net.getNodeAt(nodeIndex);
+				n.setPosition( pivotX, pivotY);
+				pivotX += 120;
+				pivotY = ( ( (nodeIndex % 4) * 100 ) + 10) ;
+			}
     	}
     	 
 		return getLearnedNet();
@@ -201,6 +213,11 @@ public class TextModeLearningToolkit extends LearningToolkit {
         	}
         	float[][] arrayNijk = getFrequencies(variable, variable.getParents()); // <- get array for data                         
         	PotentialTable table = variable.getProbabilidades();				   // <- get table to update it according to new added parents 
+        	// probably there was garbage. Clean up
+        	while (table.getVariablesSize() > 1) {
+        		// remove parents. Parents will be re-added later.
+        		table.removeVariable(table.getVariableAt(table.getVariablesSize()-1), false);
+        	}
         	int parentsLength = variable.getTamanhoPais();
 for2:       for (int j = 0; j < parentsLength; j++) {
             	Node pai = variable.getPais().get(j);

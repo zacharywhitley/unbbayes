@@ -99,7 +99,7 @@ public class ConstructionController {
 	 * 
 	 * @see ProbabilisticController
 	 */
-
+	@Deprecated
 	public ConstructionController(File file, ProbabilisticNetwork pn) {
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(
@@ -127,6 +127,7 @@ public class ConstructionController {
 		}
 	}
 
+	@Deprecated
 	public ConstructionController(File file) {
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(
@@ -169,6 +170,11 @@ public class ConstructionController {
 		}
 	}
 
+	/**
+	 * Construction controller for general structure learning
+	 * @param file
+	 * @param controller
+	 */
 	public ConstructionController(File file, MainController controller) {
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(
@@ -204,8 +210,8 @@ public class ConstructionController {
 		String[] pamp = ordenationController.getPamp();
 		variables = ordenationController.getVariables();
 		/* Constructs the topology of the net */
-		Date d = new Date();
-		long time = d.getTime();
+//		Date d = new Date();
+//		long time = d.getTime();
 		UnBBayesFrame.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		AlgorithmController algorithmController = new AlgorithmController(
 				variables, matrix, vector, caseNumber, pamp, compacted);
@@ -222,6 +228,8 @@ public class ConstructionController {
 	}
 
 	/**
+	 * {@link ConstructionController} used by the
+	 * Bayes net augmented naive bayes learning module
 	 * @version 1.0
 	 * @author Gabriel Guimarães - aluno de IC 2005-2006
 	 * @author Marcelo Ladeira - Orientador
@@ -264,36 +272,38 @@ public class ConstructionController {
 		String[] pamp = ordenationController.getPamp();
 		variables = ordenationController.getVariables();
 		new AlgorithmController(variables, matrix, vector, caseNumber, pamp, compacted, classex);
+		
+		// following commented code was migrated to above AlgorithmController
 
-		int i, j;
-		j = variables.size();
-		ArrayList<Node> variaveis = new ArrayList<Node>();
-		variaveis.ensureCapacity(j + 1);
+//		int i, j;
+//		j = variables.size();
+//		ArrayList<Node> variaveis = new ArrayList<Node>();
+//		variaveis.ensureCapacity(j + 1);
+//
+//		for (i = 0; i < classex; i++)
+//			variaveis.add(variables.get(i));
+//		for (i = classex; i < j; i++)
+//			variaveis.add(variables.get(i));
+//
+//		for (i = 0; i < j; i++) {
+//			// se alguma variavel não é filha da classe então passa a ser!
+//			if ((i != classex)
+//					&& (!(variaveis.get(classex).isParentOf(variaveis.get(i)))))
+//				//variaveis.AddChildTo(classex, variaveis.get(i));
+//				variaveis.get(classex).addChild(variaveis.get(i));
+//			// se alguma variavel tem como filho a classe--> retirar!
+//			if ((variaveis.get(i).isParentOf(variaveis.get(classex))))
+//				//variaveis.RemoveParentFrom(classex, i);
+//				variaveis.get(i).removeParent(variaveis.get(classex));
+//			// se alguma variavel nao tem a classe como pai entao passa a ter
+//			if ((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))
+//				//variaveis.AddParentTo(i, variaveis.get(classex));
+//				variaveis.get(i).addParent(variaveis.get(classex));
+//		}
+////		variaveis.ClearParentsFrom(classex);
+//		variaveis.get(classex).getParents().clear();
 
-		for (i = 0; i < classex; i++)
-			variaveis.add(variables.get(i));
-		for (i = classex; i < j; i++)
-			variaveis.add(variables.get(i));
-
-		for (i = 0; i < j; i++) {
-			// se alguma variavel não é filha da classe então passa a ser!
-			if ((i != classex)
-					&& (!(variaveis.get(classex).isParentOf(variaveis.get(i)))))
-				//variaveis.AddChildTo(classex, variaveis.get(i));
-				variaveis.get(classex).addChild(variaveis.get(i));
-			// se alguma variavel tem como filho a classe--> retirar!
-			if ((variaveis.get(i).isParentOf(variaveis.get(classex))))
-				//variaveis.RemoveParentFrom(classex, i);
-				variaveis.get(i).removeParent(variaveis.get(classex));
-			// se alguma variavel nao tem a classe como pai entao passa a ter
-			if ((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))
-				//variaveis.AddParentTo(i, variaveis.get(classex));
-				variaveis.get(i).addParent(variaveis.get(classex));
-		}
-//		variaveis.ClearParentsFrom(classex);
-		variaveis.get(classex).getParents().clear();
-
-		new ProbabilisticController(variaveis, matrix, vector, caseNumber,
+		new ProbabilisticController(variables, matrix, vector, caseNumber,
 				controller, compacted);
 	}
 
@@ -338,33 +348,45 @@ public class ConstructionController {
 					JOptionPane.ERROR_MESSAGE);
 		}
 		;
-		new B(variables, matrix, vector, caseNumber, "MDL", "", compacted);
-		CL chowliu = new CL();
-		chowliu.preparar(variables, classex, (int) caseNumber, vector,
-				compacted, matrix);
-		variables = new ArrayList(chowliu.variaveis); // TODO use interface java.util.List instead
-		int i, j;
-		j = variables.size();
-
-		// Adicionar a variavel de classe como pai de todas
-
-		for (i = 0; i < j; i++) {
-			// se alguma variavel não é filha da classe então passa a ser!
-			if ((i != classex)
-					&& (!(variables.get(classex).isParentOf(variables.get(i)))))
-				//variables.AddChildTo(classex, variables.get(i));
-				variables.get(classex).addChild(variables.get(i));
-			// se alguma variavel tem como filho a classe--> retirar!
-			if ((variables.get(i).isParentOf(variables.get(classex))))
-				//variables.RemoveParentFrom(classex, i);
-				variables.get(i).removeParent(variables.get(classex));
-			// se alguma variavel nao tem a classe como pai entao passa a ter
-			if ((!(variables.get(i).isChildOf(variables.get(classex)))))
-				//variables.AddParentTo(i, variables.get(classex));
-				variables.get(i).addParent(variables.get(classex));
-		}
-		//variables.ClearParentsFrom(classex);
-		variables.get(classex).getParents().clear();
+		
+		
+//		new B(variables, matrix, vector, caseNumber, "MDL", "", compacted);
+//		CL chowliu = new CL();
+//		chowliu.preparar(variables, classex, (int) caseNumber, vector,
+//				compacted, matrix);
+//		variables = new ArrayList(chowliu.variaveis); // TODO use interface java.util.List instead
+//		int i, j;
+//		j = variables.size();
+//
+//		// Adicionar a variavel de classe como pai de todas
+//
+//		for (i = 0; i < j; i++) {
+//			// se alguma variavel não é filha da classe então passa a ser!
+//			if ((i != classex)
+//					&& (!(variables.get(classex).isParentOf(variables.get(i)))))
+//				//variables.AddChildTo(classex, variables.get(i));
+//				variables.get(classex).addChild(variables.get(i));
+//			// se alguma variavel tem como filho a classe--> retirar!
+//			if ((variables.get(i).isParentOf(variables.get(classex))))
+//				//variables.RemoveParentFrom(classex, i);
+//				variables.get(i).removeParent(variables.get(classex));
+//			// se alguma variavel nao tem a classe como pai entao passa a ter
+//			if ((!(variables.get(i).isChildOf(variables.get(classex)))))
+//				//variables.AddParentTo(i, variables.get(classex));
+//				variables.get(i).addParent(variables.get(classex));
+//		}
+//		//variables.ClearParentsFrom(classex);
+//		variables.get(classex).getParents().clear();
+		
+		// AlgorithmController with following param substitutes the above commented code
+		String[] pamp = {
+				AlgorithmController.PARADIGMS.TreeAugmented.name(),	// required parameter
+				AlgorithmController.SCORING_ALGORITHMS.B.name(),	// optional. Can be empty
+				AlgorithmController.METRICS.MDL.name(),				// optional. Can be empty
+				""													// optional. Can be empty
+			};
+		new AlgorithmController(variables, matrix, vector, caseNumber, pamp, compacted, classex);
+		
 
 		new ProbabilisticController(variables, matrix, vector, caseNumber,
 				controller, compacted);

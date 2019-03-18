@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.exception.InvalidParentException;
 
 
 /**
@@ -35,7 +36,7 @@ import unbbayes.prs.Node;
 public class AlgorithmController{
 	
 	/** Available values in pamp array at paradigm position (0) */
-	public enum PARADIGMS {Ponctuation,IC};	
+	public enum PARADIGMS {Ponctuation,IC,TreeAugmented};	
 	/** Available values in pamp array at algorithm position (1) */
 	public enum SCORING_ALGORITHMS {K2,B};
 	/** Available values in pamp array at metric position (2) */
@@ -68,8 +69,16 @@ public class AlgorithmController{
 	} 
 	
 	public AlgorithmController(List<Node> variables,int[][] matrix, int[] vector,
-	        long caseNumber, String[] pamp, boolean compacted, int classex){	        	
-	        if(pamp[0].equalsIgnoreCase(PARADIGMS.Ponctuation.name())){
+	        long caseNumber, String[] pamp, boolean compacted, int classex){
+			if (pamp[0].equalsIgnoreCase(PARADIGMS.TreeAugmented.name())) {
+				// force this particular algorithm only, in case TAN was chosen
+				new B(variables, matrix, vector, caseNumber, "MDL", "", compacted);
+				CL chowliu = new CL();
+				chowliu.preparar(variables, classex, (int) caseNumber, vector,
+						compacted, matrix);
+				variables = new ArrayList<Node>(chowliu.variaveis); 
+				
+			} else if(pamp[0].equalsIgnoreCase(PARADIGMS.Ponctuation.name())){
 	        	if(pamp[1].equalsIgnoreCase(SCORING_ALGORITHMS.K2.name())){
 	        		new K2(variables, matrix, vector, caseNumber,pamp[2],pamp[3],compacted);	        		
 	        	}
@@ -82,7 +91,33 @@ public class AlgorithmController{
 	        	} else if(pamp[1].equalsIgnoreCase(INDEPENDENCE_ALGORITHM_CBLB)){
 	        		new CBLB(variables,matrix,vector,caseNumber,pamp[3],compacted,classex);	        		
 	        	}	        	
-	        }	        
+	        }
+	        
+	        // if class was specified, connect class and other nodes
+	        if (classex >= 0) {
+	    		for (int varIndex = 0; varIndex < variables.size(); varIndex++) {
+	    			// se alguma variavel não é filha da classe então passa a ser!
+	    			if ((varIndex != classex)
+	    					&& (!(variables.get(classex).isParentOf(variables.get(varIndex)))))
+						try {
+							variables.get(classex).addChild(variables.get(varIndex));
+						} catch (InvalidParentException e) {
+							throw new RuntimeException(e);
+						}
+	    			// se alguma variavel tem como filho a classe--> retirar!
+	    			if ((variables.get(varIndex).isParentOf(variables.get(classex))))
+	    				//variaveis.RemoveParentFrom(classex, i);
+	    				variables.get(varIndex).removeParent(variables.get(classex));
+	    			// se alguma variavel nao tem a classe como pai entao passa a ter
+	    			if ((!(variables.get(varIndex).isChildOf(variables.get(classex)))))
+						try {
+							variables.get(varIndex).addParent(variables.get(classex));
+						} catch (InvalidParentException e) {
+							throw new RuntimeException(e);
+						}
+	    		}
+	    		variables.get(classex).getParents().clear();
+	        }
 	} 
 
 }
