@@ -173,6 +173,8 @@ public class DiscretizationTest {
 			assertEquals(attribute.getAttributeName(), Attribute.NOMINAL, attribute.getAttributeType());
 		}
 		
+		getOutputFile().delete();	// delete old file
+		
 		// save discretized
 		FileController.getInstance().saveInstanceSet(getOutputFile(), dataSet, allAttributeIndexes, false);
 		
