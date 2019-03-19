@@ -128,9 +128,11 @@ public class UniformDistributionSampler implements ISampler {
   		Entry<Float, Float> lowerUpperBin = getStateIntervalParser().parseLowerUpperBin(stateLabel);
   		
   		// sample from triangular dist based on extracted range
-  		if (lowerUpperBin != null 
-  				&& !( lowerUpperBin.getKey() <= 0 && lowerUpperBin.getValue() <= 0 ) ) {
-  			
+  		if (lowerUpperBin != null ) {
+  			if (lowerUpperBin.getKey() >= lowerUpperBin.getValue()) {
+  				// this should also handle interval [0,0]
+  				return lowerUpperBin.getKey();
+  			}
   			// use uniform distribution if lower/upper bins are consistent
   			getLogger().debug("Sampling from uniform distribution. Lower = " 
   					+ lowerUpperBin.getKey() 
