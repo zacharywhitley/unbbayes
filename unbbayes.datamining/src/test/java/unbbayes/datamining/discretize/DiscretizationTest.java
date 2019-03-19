@@ -162,7 +162,7 @@ public class DiscretizationTest {
 			}
 			
 			// do not use frequency larger than distinct values
-			int numThresholds = stat.getDistinctCount() - 1;
+			int numThresholds = stat.getDistinctCount();
 			if (numThresholds > getMaxBinThreshold()) {
 				numThresholds = getMaxBinThreshold();
 			}

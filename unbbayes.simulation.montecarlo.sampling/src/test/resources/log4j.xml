@@ -20,10 +20,11 @@
     </layout> 
   </appender> 
 
-  <root> 
-    <priority value ="debug" /> 
-    <appender-ref ref="console" /> 
-    <appender-ref ref="R" /> 
-  </root>
+<!--   <root>  -->
+<!-- <!--     <priority value ="error" />  --> -->
+<!--     <priority value ="trace" />  -->
+<!--     <appender-ref ref="console" />  -->
+<!-- <!--     <appender-ref ref="R" />  --> -->
+<!--   </root> -->
   
 </log4j:configuration>

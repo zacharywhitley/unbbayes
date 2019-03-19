@@ -35,7 +35,7 @@ public class TriangularDistributionSampler extends UniformDistributionSampler {
 	@Override
 	protected float generateSample(String stateLabel) {
 		// parse the label in order to extract range (lower and upper bounds);
-  		Entry<Float, Float> lowerUpperBin = this.parseLowerUpperBin(stateLabel);
+  		Entry<Float, Float> lowerUpperBin = getStateIntervalParser().parseLowerUpperBin(stateLabel);
   		
   		// sample from triangular dist based on extracted range
   		if (lowerUpperBin != null 

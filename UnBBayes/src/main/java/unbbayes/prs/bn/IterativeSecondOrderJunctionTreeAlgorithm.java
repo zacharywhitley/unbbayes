@@ -118,13 +118,18 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 		}
 	}
 	
+	public void propagate() {
+		this.propagate(true);
+	}
+	
 	/**
 	 * Performs sampling of first-order CPTs and delegate to superclass.
 	 * This will be iterated {@link #getMaxIterations()} times
 	 * or until {@link #getMaxTimeMillis()} is reached.
+	 * @param resampleCPT : if true, CPTs will be resampled based on dirichlet distribution
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#propagate()
 	 */
-	public void propagate() {
+	public void propagate(boolean resampleCPT) {
 		
 		// initialize maps of objects that calculate statistics associated with each node
 		Map<ProbabilisticNode, List<DescriptiveStatistics>> mapStatisticsByState = new HashMap<ProbabilisticNode, List<DescriptiveStatistics>>();
@@ -134,7 +139,6 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 		Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
 		Set<String> negativeEvidenceNodeNames = new HashSet<String>();	// name of nodes in evidenceMap whose evidences are negative (indicate evidence NOT in a given state)
 		Map<String, float[]> likelihoodMap = new HashMap<String, float[]>();	// backup plan for cases when we could not create virtual nodes
-		
 		
 		// backup original cpt values,
 		// initialize statistics of marginals of each node,
@@ -154,99 +158,102 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 				mapStatisticsByState.put((ProbabilisticNode) node, statisticsByState);
 				
 				// start instantiating dirichlet distribution for cells in cpt
-				
-				// extract count table
-				PotentialTable countTable = (PotentialTable) getNet().getProperty(CountCompatibleNetIO.DEFAULT_COUNT_TABLE_PREFIX + node.getName());
-				if (countTable == null) {
-					getLogger().warn("Count table not found for node " + node.getName() + ". Counts will be ignored for this node.");
-					continue;
-				}
-				
-				// code block following lines below assumes that the variable at index 0 of PotentialTable is the node (owner) itself, 
-				// and other variables are the parents of such node.
-				if (countTable.indexOfVariable(node) != 0) {
-					throw new IllegalArgumentException("Current version assumes that the node which owns a potential/count table is associated with index 0 of such potential/count table,"
-													+ " but index was " + countTable.indexOfVariable(node));
-				}
-				
-				// initialize list to be filled with dirichlet distribution of CPT (separated by each combination of states of parent nodes)
-				List<Dirichlet> dirichletByParentState = new ArrayList<Dirichlet>();
-				
-				// iterate on cells of the count table as cell = base cell + offset (the offset is relative to states of owner node).
-				// Count table contains absolute frequency (as opposed to probabilities -- relative frequencies)
-				// of states of owner node given states of parents
-				for (int baseCellIndex = 0; baseCellIndex < countTable.tableSize(); ) {
+				if (resampleCPT) {
+					// extract count table
+					PotentialTable countTable = (PotentialTable) getNet().getProperty(CountCompatibleNetIO.DEFAULT_COUNT_TABLE_PREFIX + node.getName());
+					if (countTable == null) {
+						getLogger().warn("Count table not found for node " + node.getName() + ". Counts will be ignored for this node.");
+						continue;
+					}
 					
-					// extract states of all nodes corresponding to current cell in table
+					// code block following lines below assumes that the variable at index 0 of PotentialTable is the node (owner) itself, 
+					// and other variables are the parents of such node.
+					if (countTable.indexOfVariable(node) != 0) {
+						throw new IllegalArgumentException("Current version assumes that the node which owns a potential/count table is associated with index 0 of such potential/count table,"
+								+ " but index was " + countTable.indexOfVariable(node));
+					}
+					
+					// initialize list to be filled with dirichlet distribution of CPT (separated by each combination of states of parent nodes)
+					List<Dirichlet> dirichletByParentState = new ArrayList<Dirichlet>();
+					
+					// iterate on cells of the count table as cell = base cell + offset (the offset is relative to states of owner node).
+					// Count table contains absolute frequency (as opposed to probabilities -- relative frequencies)
+					// of states of owner node given states of parents
+					for (int baseCellIndex = 0; baseCellIndex < countTable.tableSize(); ) {
+						
+						// extract states of all nodes corresponding to current cell in table
 //					int[] statesAtCurrentCell = countTable.getMultidimensionalCoord(baseCellIndex);
 //					// make sure we are always at a cell corresponding to 1st state (state 0) of owner node
 //					if (statesAtCurrentCell[0] != 0) {	// index 0 of this array is supposedly associated with owner node
 //						throw new RuntimeException("Failed to obtain cell representing the 1st state of the node owning the CPT. This might be a bug.");
 //					}
-					
-					// instantiate dirichlet distribution with the counts we found in current table
-					// parameters of a dirichlet distribution are usually represented with greek alphas in the literature
-					// number of parameters of dirichlet is equal to number of states of the associated random variable
-					double[] alphas = new double[node.getStatesSize()];		
-					for (int stateOffset = 0; stateOffset < alphas.length; stateOffset++) {
-						alphas[stateOffset] = getInitialVirtualCounts() + countTable.getValue(baseCellIndex + stateOffset);
+						
+						// instantiate dirichlet distribution with the counts we found in current table
+						// parameters of a dirichlet distribution are usually represented with greek alphas in the literature
+						// number of parameters of dirichlet is equal to number of states of the associated random variable
+						double[] alphas = new double[node.getStatesSize()];		
+						for (int stateOffset = 0; stateOffset < alphas.length; stateOffset++) {
+							alphas[stateOffset] = getInitialVirtualCounts() + countTable.getValue(baseCellIndex + stateOffset);
+						}
+						Dirichlet dirichlet = new Dirichlet(alphas);
+						dirichletByParentState.add(dirichlet);
+						
+						// skip to next cell in which the state of CPT owner (current node) is 0 again
+						baseCellIndex += node.getStatesSize();
 					}
-					Dirichlet dirichlet = new Dirichlet(alphas);
-					dirichletByParentState.add(dirichlet);
 					
-					// skip to next cell in which the state of CPT owner (current node) is 0 again
-					baseCellIndex += node.getStatesSize();
-				}
-				
-				// keep track of the dirichlet object, because we'll use it during the sampling process
-				mapDirichletCPT.put((ProbabilisticNode) node, dirichletByParentState);
-				
-				// keep track of evidences (note: at this point we know node is a ProbabilisticNode)
-				if (((ProbabilisticNode) node).hasEvidence()) {
-					if (((ProbabilisticNode) node).hasLikelihood()) {
-						// the following code was added here because we need current marginal to calculate soft evidence
-						// Enter the likelihood as virtual nodes
-						try {
-							// prepare list of nodes to add soft/likelihood evidence
-							List<INode> evidenceNodes = new ArrayList<INode>();
-							evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
-							// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
-							evidenceNodes.addAll(this.getLikelihoodExtractor().extractLikelihoodParents(this.getNetwork(), node));
-							// create the virtual node
-							INode virtual = null;
+					// keep track of the dirichlet object, because we'll use it during the sampling process
+					mapDirichletCPT.put((ProbabilisticNode) node, dirichletByParentState);
+					
+					// keep track of evidences (note: at this point we know node is a ProbabilisticNode)
+					if (((ProbabilisticNode) node).hasEvidence()) {
+						if (((ProbabilisticNode) node).hasLikelihood()) {
+							// the following code was added here because we need current marginal to calculate soft evidence
+							// Enter the likelihood as virtual nodes
 							try {
-								virtual = this.addVirtualNode(this.getNetwork(), evidenceNodes);
-								if (virtual != null) {
-									// store the hard evidence of the new virtual node, so that it can be retrieved after reset
-									// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
-									evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+								// prepare list of nodes to add soft/likelihood evidence
+								List<INode> evidenceNodes = new ArrayList<INode>();
+								evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+								// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+								evidenceNodes.addAll(this.getLikelihoodExtractor().extractLikelihoodParents(this.getNetwork(), node));
+								// create the virtual node
+								INode virtual = null;
+								try {
+									virtual = this.addVirtualNode(this.getNetwork(), evidenceNodes);
+									if (virtual != null) {
+										// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+										// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
+										evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+									}
+								} catch (Exception e) {
+									Debug.println(getClass(), "Could not create virtual node for " + node, e);
+									// backup plan: use old routine (although it is not entirely correct)
+									// backup the likelihood values
+									likelihoodMap.put(node.getName(), ((ProbabilisticNode) node).getLikelihood());
+									// putting in evidenceMap will mark this node as evidence (no matter what kind of evidence it is actually)
+									evidenceMap.put(node.getName(), 0);	
 								}
 							} catch (Exception e) {
-								Debug.println(getClass(), "Could not create virtual node for " + node, e);
-								// backup plan: use old routine (although it is not entirely correct)
-								// backup the likelihood values
-								likelihoodMap.put(node.getName(), ((ProbabilisticNode) node).getLikelihood());
-								// putting in evidenceMap will mark this node as evidence (no matter what kind of evidence it is actually)
-								evidenceMap.put(node.getName(), 0);	
+								throw new RuntimeException(e);
 							}
-						} catch (Exception e) {
-							throw new RuntimeException(e);
+							
+						} else {
+							// store hard evidence, so that it can be retrieved after reset
+							int evidenceIndex = ((ProbabilisticNode) node).getEvidence();
+							if (((ProbabilisticNode) node).getMarginalAt(evidenceIndex) == 0) {
+								// this is a "NOT" evidence (evidence about "NOT" in a given state)
+								negativeEvidenceNodeNames.add(node.getName());
+							}
+							evidenceMap.put(node.getName(), evidenceIndex);
 						}
-					
-					} else {
-						// store hard evidence, so that it can be retrieved after reset
-						int evidenceIndex = ((ProbabilisticNode) node).getEvidence();
-						if (((ProbabilisticNode) node).getMarginalAt(evidenceIndex) == 0) {
-							// this is a "NOT" evidence (evidence about "NOT" in a given state)
-							negativeEvidenceNodeNames.add(node.getName());
-						}
-						evidenceMap.put(node.getName(), evidenceIndex);
 					}
-				}
+					
+				}	// end of if resample cpt
 				
 			}	// end of if (node instanceof ProbabilisticNode)
 			
 		}	// end of iteration for each node
+		
 		
 		getLogger().debug("Starting " + getMaxIterations() 
 				+ " iterations of monte-carlo simulation or for " 
@@ -257,51 +264,55 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 		
 		// start sampling cpts and calculating respective marginals 
 		for (int iteration = 0; iteration < getMaxIterations(); iteration++) {
-			// sample CPTs with dirichlet distribution;
-			for (Node node : getNet().getNodes()) {
-				if (node instanceof ProbabilisticNode) {
-					
-					// extract cpt to overwrite with new sample
-					PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
-					
-					// extract dirichlet objects
-					List<Dirichlet> dirichletByParentState = mapDirichletCPT.get(node);
-					
-					// iterate on number of combination of states of parent nodes 
-					// (this number is equal to number of Dirichlet objects in the list)
-					for (int dirichletListIndex = 0; dirichletListIndex < dirichletByParentState.size(); dirichletListIndex++) {
+			if (resampleCPT) {
+				// sample CPTs with dirichlet distribution;
+				for (Node node : getNet().getNodes()) {
+					if (node instanceof ProbabilisticNode) {
 						
-						// sample a conditional probability from respective dirichlet dist
-						Dirichlet dirichlet = dirichletByParentState.get(dirichletListIndex);
-						double[] sampleConditionalProb = dirichlet.nextDistribution();
+						// extract cpt to overwrite with new sample
+						PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
 						
-						// corresponding cell in table is the base cell index (see code below) + offset
-						int baseCellIndex = dirichletListIndex * node.getStatesSize();
-						for (int stateOffset = 0; stateOffset < sampleConditionalProb.length; stateOffset++) {
-							// overwrite cpt by accessing cells by base + offset
-							table.setValue(baseCellIndex + stateOffset, (float)sampleConditionalProb[stateOffset]);
-						}
+						// extract dirichlet objects
+						List<Dirichlet> dirichletByParentState = mapDirichletCPT.get(node);
 						
-					}	// end of iteration for each combination of states of parent nodes
+						// iterate on number of combination of states of parent nodes 
+						// (this number is equal to number of Dirichlet objects in the list)
+						for (int dirichletListIndex = 0; dirichletListIndex < dirichletByParentState.size(); dirichletListIndex++) {
+							
+							// sample a conditional probability from respective dirichlet dist
+							Dirichlet dirichlet = dirichletByParentState.get(dirichletListIndex);
+							double[] sampleConditionalProb = dirichlet.nextDistribution();
+							
+							// corresponding cell in table is the base cell index (see code below) + offset
+							int baseCellIndex = dirichletListIndex * node.getStatesSize();
+							for (int stateOffset = 0; stateOffset < sampleConditionalProb.length; stateOffset++) {
+								// overwrite cpt by accessing cells by base + offset
+								table.setValue(baseCellIndex + stateOffset, (float)sampleConditionalProb[stateOffset]);
+							}
+							
+						}	// end of iteration for each combination of states of parent nodes
+						
+					}	// end of if (node instanceof ProbabilisticNode)
 					
-				}	// end of if (node instanceof ProbabilisticNode)
+				}	// end of iteration for each node
 				
-			}	// end of iteration for each node
-			
-			// compile/propagate with sampled cpt;
-			super.run();
-			
-			// re-insert the evidences, because the above compilation has reset the evidences;
-			for (String name : evidenceMap.keySet()) {
-				// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
-				((TreeVariable)getNet().getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
-
-				if (likelihoodMap.containsKey(name)) {
-					// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
-					// so, use old routine for likelihood evidence
-					((TreeVariable)getNet().getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+				// compile/propagate with sampled cpt;
+				super.run();
+				
+				// re-insert the evidences, because the above compilation has reset the evidences;
+				for (String name : evidenceMap.keySet()) {
+					// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
+					((TreeVariable)getNet().getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
+					
+					if (likelihoodMap.containsKey(name)) {
+						// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
+						// so, use old routine for likelihood evidence
+						((TreeVariable)getNet().getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+					}
 				}
-			}
+				
+			}	// end of if resample cpt
+			
 			
 			// now force global consistency and propagate the evidences
 			super.propagate();

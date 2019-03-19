@@ -95,7 +95,7 @@ public class RangeDiscretizationWithZero extends RangeDiscretization {
 		
 		// get min and max in range
 		float min = Float.MAX_VALUE;
-		float max = Float.MIN_VALUE;
+		float max = -100000f;
 		for (int i = 0; i < dataBackup.length; i++) {
       		float dataValue = dataBackup[i];
       		if (dataValue > max) {

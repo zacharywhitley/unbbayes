@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.util.DefaultStateIntervalParser;
+import unbbayes.util.IStateIntervalParser;
 
 /**
  *  Performs the inverse of discretization
@@ -22,9 +24,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class UniformDistributionSampler implements ISampler {
 
-	private String prefix= "_";
-	private String splitter = "_to_";
-	private String suffix = "";
+	private IStateIntervalParser stateIntervalParser = new DefaultStateIntervalParser();
 	
 	private InstanceSet inst;
 
@@ -125,7 +125,7 @@ public class UniformDistributionSampler implements ISampler {
 	 */
 	protected float generateSample(String stateLabel) {
 		// parse the label in order to extract range (lower and upper bounds);
-  		Entry<Float, Float> lowerUpperBin = this.parseLowerUpperBin(stateLabel);
+  		Entry<Float, Float> lowerUpperBin = getStateIntervalParser().parseLowerUpperBin(stateLabel);
   		
   		// sample from triangular dist based on extracted range
   		if (lowerUpperBin != null 
@@ -146,53 +146,6 @@ public class UniformDistributionSampler implements ISampler {
   		
 	}
 	
-	/**
-	 * It will use {@link #getPrefix()}, {@link #getSplitter()},
-	 * and {@link #getSuffix()} to parse a state label and
-	 * obtain lower and upper numeric values to sample from.
-	 * @param state : state label
-	 * @return : {@link Entry} in which {@link Entry#getKey()} is the lower
-	 * bound and {@link Entry#getValue()} is the upper bound.
-	 */
-	protected Map.Entry<Float, Float> parseLowerUpperBin(String state) {
-		getLogger().trace("Parsing state " + state);
-		
-		// remove prefix
-		if (state.startsWith(getPrefix())) {
-			state = state.substring(getPrefix().length());
-			getLogger().debug("Removed prefix " + getPrefix() + ". Result: " + state);
-		}
-		
-		// remove suffix
-		if (state.endsWith(getSuffix())) {
-			state = state.substring(0, state.length() - getSuffix().length());
-			getLogger().debug("Removed suffix " + getSuffix() + ". Result: " + state);
-		}
-		
-		// split to 2 substrings with splitter
-		String[] split = state.split(getSplitter());
-		
-		// parse the substrings
-		float lower = Float.MAX_VALUE;
-		float upper = Float.MIN_VALUE;
-		try {
-			lower = Float.parseFloat(split[0]);
-			upper = lower;
-			if (split.length >= 2 ) {
-				upper = Float.parseFloat(split[1]);
-			}
-		} catch (Exception e) {
-			getLogger().warn("Could not parse " + state + " with splitter " + getSplitter());
-			getLogger().warn("Obtained split was: ");
-			for (String string : split) {
-				getLogger().warn(string);
-			}
-		}
-		
-		getLogger().trace("Parsed " + state + ". Lower = " + lower + ", upper = " + upper);
-		
-		return Collections.singletonMap(lower, upper).entrySet().iterator().next();
-	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.datamining.discretize.IDiscretization#getName()
@@ -201,47 +154,6 @@ public class UniformDistributionSampler implements ISampler {
 		return "Uniform distribution";
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#getPrefix()
-	 */
-	public String getPrefix() {
-		return prefix;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#setPrefix(java.lang.String)
-	 */
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#getSplitter()
-	 */
-	public String getSplitter() {
-		return splitter;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#setSplitter(java.lang.String)
-	 */
-	public void setSplitter(String splitter) {
-		this.splitter = splitter;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#getSuffix()
-	 */
-	public String getSuffix() {
-		return suffix;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.datamining.discretize.sample.ISampler#setSuffix(java.lang.String)
-	 */
-	public void setSuffix(String suffix) {
-		this.suffix = suffix;
-	}
 	
 	/*
 	 * (non-Javadoc)
@@ -272,6 +184,20 @@ public class UniformDistributionSampler implements ISampler {
 	 */
 	public void setLogger(Logger logger) {
 		this.logger = logger;
+	}
+
+	/**
+	 * @return the stateIntervalParser
+	 */
+	public IStateIntervalParser getStateIntervalParser() {
+		return this.stateIntervalParser;
+	}
+
+	/**
+	 * @param stateIntervalParser the stateIntervalParser to set
+	 */
+	public void setStateIntervalParser(IStateIntervalParser stateIntervalParser) {
+		this.stateIntervalParser = stateIntervalParser;
 	}
 
 }

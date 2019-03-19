@@ -75,7 +75,7 @@ public class SamplingPanel extends JPanel {
 		prefixLabelPanel.add(new JLabel("Prefix of states :"), BorderLayout.CENTER);
 		
 		JPanel prefixPanel = new JPanel(new BorderLayout());
-		prefixTextField = new JTextField(defaultSampler.getPrefix(), 5);
+		prefixTextField = new JTextField(defaultSampler.getStateIntervalParser().getPrefix(), 5);
 		prefixPanel.add(prefixTextField,BorderLayout.CENTER);
 		
 		this.add(prefixLabelPanel);
@@ -85,7 +85,7 @@ public class SamplingPanel extends JPanel {
 		splitterLabelPanel.add(new JLabel("Splitter of states :"), BorderLayout.CENTER);
 		
 		JPanel splitterPanel = new JPanel(new BorderLayout());
-		splitterTextField = new JTextField(defaultSampler.getSplitter(), 5);
+		splitterTextField = new JTextField(defaultSampler.getStateIntervalParser().getSplitter(), 5);
 		splitterPanel.add(splitterTextField,BorderLayout.CENTER);
 		
 		this.add(splitterLabelPanel);
@@ -95,7 +95,7 @@ public class SamplingPanel extends JPanel {
 		suffixLabelPanel.add(new JLabel("Suffix of states :"), BorderLayout.CENTER);
 		
 		JPanel suffixPanel = new JPanel(new BorderLayout());
-		suffixTextField = new JTextField(defaultSampler.getSuffix(), 5);
+		suffixTextField = new JTextField(defaultSampler.getStateIntervalParser().getSuffix(), 5);
 		suffixPanel.add(suffixTextField,BorderLayout.CENTER);
 		
 		this.add(suffixLabelPanel);

@@ -1,9 +1,7 @@
-/**
- * 
- */
 package unbbayes.datamining.discretize.sample;
 
 import unbbayes.datamining.discretize.IDiscretization;
+import unbbayes.util.IStateIntervalParser;
 
 /**
  * Common interface of classes that will undo discretization
@@ -11,13 +9,18 @@ import unbbayes.datamining.discretize.IDiscretization;
  */
 public interface ISampler extends IDiscretization {
 	
-	public String getPrefix();
-	public void setPrefix(String prefix);
+	/**
+	 * @return
+	 * Object to parse a state label into 2 numbers
+	 * (interval).
+	 */
+	public IStateIntervalParser getStateIntervalParser();
 	
-	public String getSplitter();
-	public void setSplitter(String splitter);
-	
-	public String getSuffix();
-	public void setSuffix(String suffix);
+	/**
+	 * @param parser
+	 * Object to parse a state label into 2 numbers
+	 * (interval).
+	 */
+	public void setStateIntervalParser(IStateIntervalParser parser);
 	
 }

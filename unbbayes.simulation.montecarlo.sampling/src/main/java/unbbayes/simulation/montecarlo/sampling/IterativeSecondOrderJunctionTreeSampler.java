@@ -262,7 +262,7 @@ public class IterativeSecondOrderJunctionTreeSampler implements IMonteCarloSampl
 					auxiliaryEvidenceNodes.add(node);	
 					
 					// propagate new evidence
-					getAlgorithm().propagate();
+					getAlgorithm().propagate(false);
 				} else {
 					getLogger().debug("Evidence of node " + node + " = " + node.getStateAt(state));
 				}

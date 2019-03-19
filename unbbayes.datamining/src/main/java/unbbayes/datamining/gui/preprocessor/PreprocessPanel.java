@@ -475,9 +475,9 @@ public class PreprocessPanel extends JPanel
 
 		try {
 			// update the configuration
-			sampler.setPrefix(samplingPanel.getPrefixTextField().getText());
-			sampler.setSuffix(samplingPanel.getSuffixTextField().getText());
-			sampler.setSplitter(samplingPanel.getSplitterTextField().getText());
+			sampler.getStateIntervalParser().setPrefix(samplingPanel.getPrefixTextField().getText());
+			sampler.getStateIntervalParser().setSuffix(samplingPanel.getSuffixTextField().getText());
+			sampler.getStateIntervalParser().setSplitter(samplingPanel.getSplitterTextField().getText());
 			
 			// running discretization will "undo" discretization
 			sampler.discretizeAttribute( attribute, -1 );

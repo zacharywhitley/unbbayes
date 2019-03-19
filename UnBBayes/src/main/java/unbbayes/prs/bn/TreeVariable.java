@@ -105,6 +105,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
 
     public void setMarginalAt(int index, float value) {
+    	if (marginalList == null) {
+    		initMarginalList();
+    	}
         marginalList[index] = value;
     }
     
