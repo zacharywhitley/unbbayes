@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 		URL evidenceURL = getClass().getResource("./testEvidence.txt");
 		assertNotNull(evidenceURL);
 		
-		File outFile = new File("samples_learnedNetWithExtraArcsDataFreq50.txt");
+		File outFile = new File("samples_Freq50_DBN_" + System.currentTimeMillis() + ".txt");
 		outFile.delete();
 		
 		// load net
@@ -223,7 +224,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 		URL evidenceURL = getClass().getResource("./testEvidence.txt");
 		assertNotNull(evidenceURL);
 		
-		File outFile = new File("samples_learnedNetWithExtraArcsDataRange50.txt");
+		File outFile = new File("samples_Range50_DBN_" + System.currentTimeMillis() + ".txt");
 		outFile.delete();
 		
 		// load net
