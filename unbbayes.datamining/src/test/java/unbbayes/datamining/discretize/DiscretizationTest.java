@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -188,131 +190,153 @@ public class DiscretizationTest {
 	 * @throws Exception 
 	 */
 	@Test
-	public final void testTriangularDistributionSamplerFreq() throws Exception {
+	public final void testTriangularDistributionSamplerFreqBatch() throws Exception {
 
 		int expectedNumData = 3582;
 		int expectedNumAttributes = 48;
+		String regexAttributeToSave = "w2_.+";
 		
-		File file = new File(getClass().getResource("samples_learnedNetWithExtraArcsDataFreq50.txt").toURI());
-		assertTrue(file.exists());
-		File outputFile = new File("samples_learnedNetWithExtraArcsDataFreq50_triangular.txt");
-		outputFile.delete();
+		File folder = new File(getClass().getResource("samplesFreq/").toURI());
+//		folder = new File(getClass().getResource("samplesRange/").toURI());
 		
-		// read initial 4 rows in order to check for properties of the data
-		TxtLoader loader = new TxtLoader(file, 4);	
-		assertNotNull(loader);
+		assertTrue(folder.exists());
+		assertTrue(folder.isDirectory());
+		assertTrue(folder.list().length > 0);
 		
-		
-		// load header only to check if number of headers matches with expected
-		loader.buildHeader();
-		assertEquals(expectedNumAttributes, loader.getNumAttributes());
-		
-		expectedNumAttributes = loader.getNumAttributes();
-		
-		// these are some properties we need to check
-		boolean[] attributeIsString = new boolean[expectedNumAttributes];
-		byte[] attributeType = new byte[expectedNumAttributes];
-		String[] attributeNames = new String[expectedNumAttributes];
-		
-		Arrays.fill(attributeIsString, true);
-		Arrays.fill(attributeType, Attribute.NOMINAL);
-		
-		// backup properties of attributes
-		InstanceSet dataSet = loader.getInstanceSet();
-		for (int attributeIndex = 0; attributeIndex < expectedNumAttributes; attributeIndex++) {
+		for (File file : folder.listFiles()) {
+			// batch process files in folder
+			assertTrue(file.exists());
+			assertTrue(file.getName().endsWith(".txt"));
 			
-			Attribute attribute = dataSet.getAttribute(attributeIndex);
-			attributeNames[attributeIndex] = attribute.getAttributeName();
+			// append suffix to output file name
+			String outFileName = file.getName().replace(".txt", "_triangular.txt");
+			File outputFile = new File(outFileName);
+			outputFile.delete();
 			
-			// check if data of current attribute are numeric
-			boolean isNumeric = false;
-			for (String value : attribute.getDistinticNominalValues()) {
-				try {
-					Float.parseFloat(value);
-					isNumeric = true;
-				} catch (NumberFormatException e) {
-					isNumeric = false;
-					break;
+			// read initial 4 rows in order to check for properties of the data
+			TxtLoader loader = new TxtLoader(file, 4);	
+			assertNotNull(file.getName(), loader);
+			
+			
+			// load header only to check if number of headers matches with expected
+			loader.buildHeader();
+			assertEquals(file.getName(), expectedNumAttributes, loader.getNumAttributes());
+			
+			expectedNumAttributes = loader.getNumAttributes();
+			
+			// these are some properties we need to check
+			boolean[] attributeIsString = new boolean[expectedNumAttributes];
+			byte[] attributeType = new byte[expectedNumAttributes];
+			String[] attributeNames = new String[expectedNumAttributes];
+			
+			Arrays.fill(attributeIsString, true);
+			Arrays.fill(attributeType, Attribute.NOMINAL);
+			
+			// backup properties of attributes
+			InstanceSet dataSet = loader.getInstanceSet();
+			for (int attributeIndex = 0; attributeIndex < expectedNumAttributes; attributeIndex++) {
+				
+				Attribute attribute = dataSet.getAttribute(attributeIndex);
+				attributeNames[attributeIndex] = attribute.getAttributeName();
+				
+				// check if data of current attribute are numeric
+				boolean isNumeric = false;
+				for (String value : attribute.getDistinticNominalValues()) {
+					try {
+						Float.parseFloat(value);
+						isNumeric = true;
+					} catch (NumberFormatException e) {
+						isNumeric = false;
+						break;
+					}
 				}
+				
+				// mark this attribute as number or name
+				attributeType[attributeIndex] = isNumeric?Attribute.NUMERIC:Attribute.NOMINAL;
+				attributeIsString[attributeIndex] = !isNumeric;	// numbers cannot be string
+				
 			}
 			
-			// mark this attribute as number or name
-			attributeType[attributeIndex] = isNumeric?Attribute.NUMERIC:Attribute.NOMINAL;
-			attributeIsString[attributeIndex] = !isNumeric;	// numbers cannot be string
+			// will reload everything
+			loader = new TxtLoader(file, -1);
+			assertNotNull(file.getName(), loader);
 			
-		}
-		
-		// will reload everything
-		loader = new TxtLoader(file, -1);
-		assertNotNull(loader);
-		
-		// configure loading mode (e.g. number, string, etc)
-		
-		loader.setNumAttributes(expectedNumAttributes);
-		loader.setCounterAttribute(-1);			// assume no counter in data
-		loader.setAttributeName(attributeNames);
-		loader.setAttributeIsString(attributeIsString);
-		loader.setAttributeType(attributeType);
-		
-		
-		// load all instances
-		while (loader.getInstance());
-		
-		// re extract full data set
-		dataSet = loader.getInstanceSet();
-		assertNotNull(dataSet);
-		
-		// instantiate discretizer
-		ISampler sampler = new TriangularDistributionSampler(dataSet);
-		dataSet = sampler.getInstances();	// use the exact instance used by discretizer (because it may be a clone)
-		assertNotNull(dataSet);
-		
-		assertEquals(expectedNumData, dataSet.instances.length);
-		
-		
-		// check number of columns
-		assertEquals(expectedNumAttributes, dataSet.getAttributes().length);
-		
-		
-		// check that columns are not nominal
-		for (int i = 0; i < dataSet.getAttributes().length; i++) {
-			assertEquals(dataSet.getAttribute(i).getAttributeName(), Attribute.NOMINAL, dataSet.getAttribute(i).getAttributeType());
-		}
-		
-		
-		AttributeStats[] stats = dataSet.getAttributeStats();
-		assertNotNull(stats);
-		assertEquals(expectedNumAttributes, stats.length);
-		
-		// sample numeric values 
-		int[] allAttributeIndexes = new int[expectedNumAttributes];	// keep track of attributes that were visited
-		for (int attributeIndex = 0; attributeIndex < expectedNumAttributes; attributeIndex++) {
+			// configure loading mode (e.g. number, string, etc)
 			
-			// extract attribute and stats
-			Attribute attribute = dataSet.getAttribute(attributeIndex);
-			AttributeStats stat = stats[attributeIndex];
+			loader.setNumAttributes(expectedNumAttributes);
+			loader.setCounterAttribute(-1);			// assume no counter in data
+			loader.setAttributeName(attributeNames);
+			loader.setAttributeIsString(attributeIsString);
+			loader.setAttributeType(attributeType);
 			
-			allAttributeIndexes[attributeIndex] = attributeIndex;
 			
-			if (attribute.getAttributeType() != Attribute.NOMINAL) {
-				continue;	// ignore numeric
+			// load all instances
+			while (loader.getInstance());
+			
+			// re extract full data set
+			dataSet = loader.getInstanceSet();
+			assertNotNull(dataSet);
+			
+			// instantiate discretizer
+			ISampler sampler = new TriangularDistributionSampler(dataSet);
+			dataSet = sampler.getInstances();	// use the exact instance used by discretizer (because it may be a clone)
+			assertNotNull(file.getName(), dataSet);
+			
+			assertEquals(file.getName(), expectedNumData, dataSet.instances.length);
+			
+			
+			// check number of columns
+			assertEquals(file.getName(), expectedNumAttributes, dataSet.getAttributes().length);
+			
+			
+			// check that columns are not nominal
+			for (int i = 0; i < dataSet.getAttributes().length; i++) {
+				assertEquals(file.getName() + ", " + dataSet.getAttribute(i).getAttributeName(), Attribute.NOMINAL, dataSet.getAttribute(i).getAttributeType());
 			}
 			
-			// do not use frequency larger than distinct values
-			int numThresholds = stat.getDistinctCount();
-			if (numThresholds > getMaxBinThreshold()) {
-				numThresholds = getMaxBinThreshold();
+			
+			AttributeStats[] stats = dataSet.getAttributeStats();
+			assertNotNull(file.getName(), stats);
+			assertEquals(file.getName(), expectedNumAttributes, stats.length);
+			
+			// sample numeric values 
+			List<Integer> attributeIndexesToSave = new ArrayList<Integer>(); // keep track of attributes that were visited
+			for (int attributeIndex = 0; attributeIndex < expectedNumAttributes; attributeIndex++) {
+				
+				// extract attribute and stats
+				Attribute attribute = dataSet.getAttribute(attributeIndex);
+				AttributeStats stat = stats[attributeIndex];
+				
+				if (attribute.getAttributeName().matches(regexAttributeToSave)) {
+					attributeIndexesToSave.add(attributeIndex);
+				}
+				
+				if (attribute.getAttributeType() != Attribute.NOMINAL) {
+					continue;	// ignore numeric
+				}
+				
+				// do not use frequency larger than distinct values
+				int numThresholds = stat.getDistinctCount();
+				if (numThresholds > getMaxBinThreshold()) {
+					numThresholds = getMaxBinThreshold();
+				}
+				
+				sampler.discretizeAttribute(attribute, numThresholds);
+				attribute = dataSet.getAttribute(attributeIndex);
+				
+				assertEquals(file.getName() + ", " + attribute.getAttributeName(), Attribute.NUMERIC, attribute.getAttributeType());
 			}
 			
-			sampler.discretizeAttribute(attribute, numThresholds);
-			attribute = dataSet.getAttribute(attributeIndex);
+			// save method requires indexes to be array of int instead of list
+			int[] indexesToSave = new int[attributeIndexesToSave.size()];
+			for (int i = 0; i < attributeIndexesToSave.size(); i++) {
+				indexesToSave[i] = attributeIndexesToSave.get(i);
+			}
+			// save output
+			FileController.getInstance().saveInstanceSet(outputFile, dataSet, indexesToSave , false);
+			assertTrue(outputFile.getName(), outputFile.exists());
 			
-			assertEquals(attribute.getAttributeName(), Attribute.NUMERIC, attribute.getAttributeType());
 		}
-		
-		
-		// save discretized
-		FileController.getInstance().saveInstanceSet(outputFile, dataSet, allAttributeIndexes, false);
 		
 	}
 
