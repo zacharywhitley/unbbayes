@@ -38,8 +38,10 @@ public class TriangularDistributionSampler extends UniformDistributionSampler {
   		Entry<Float, Float> lowerUpperBin = getStateIntervalParser().parseLowerUpperBin(stateLabel);
   		
   		// sample from triangular dist based on extracted range
-  		if (lowerUpperBin != null 
-  				&& !( lowerUpperBin.getKey() <= 0 && lowerUpperBin.getValue() <= 0 ) ) {
+  		if (lowerUpperBin != null ) {
+  			if (lowerUpperBin.getKey() <= 0 && lowerUpperBin.getValue() <= 0 ) {
+  				return 0f;
+  			}
   			
   			// use triangular distribution if lower/upper bins are consistent
   			getLogger().debug("Sampling from triangular distribution. Lower = " 
