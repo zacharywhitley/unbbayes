@@ -2,7 +2,7 @@ net
 {
      node_size = (0 0);
      name = "AutomaticallyCreatedNet";
-     tree = "(ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,year2012),ActualFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,YEAR2014))";
+     tree = "(ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,year2012),ActualFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,YEAR2014))";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
 }
@@ -115,6 +115,13 @@ utility Utility_2015
      position = (664 231);
 }
 
+node ActualFishVolume_2017
+{
+     label = "C1";
+     position = (966 38);
+     states = ("Low" "Medium" "High" "absurd");
+}
+
 potential (ObservedFishVolume_2016 | ActualFishVolume_2016)
 {
  data = (( 0.9 0.050000012 0.050000012 0.0 )
@@ -180,14 +187,20 @@ potential (AllowableCatchVolume_2013 | ObservedFishVolume_2013)
 {
 }
 
-potential (Utility_2013 | AllowableCatchVolume_2013)
+potential (Utility_2013 | ActualFishVolume_2014 AllowableCatchVolume_2013)
 {
- data = ( 0.0 );
+ data = (( 0.0 )
+( 0.0 )
+( 0.0 )
+( 0.0 ));
 }
 
-potential (Utility_2014 | AllowableCatchVolume_2014)
+potential (Utility_2014 | ActualFishVolume_2015 AllowableCatchVolume_2014)
 {
- data = ( 0.0 );
+ data = (( 0.0 )
+( 0.0 )
+( 0.0 )
+( 0.0 ));
 }
 
 potential (AllowableCatchVolume_2014 | ObservedFishVolume_2014)
@@ -202,13 +215,27 @@ potential (AllowableCatchVolume_2016 | ObservedFishVolume_2016)
 {
 }
 
-potential (Utility_2016 | AllowableCatchVolume_2016)
+potential (Utility_2016 | ActualFishVolume_2017 AllowableCatchVolume_2016)
 {
- data = ( 0.0 );
+ data = (( 0.0 )
+( 0.0 )
+( 0.0 )
+( 0.0 ));
 }
 
-potential (Utility_2015 | AllowableCatchVolume_2015)
+potential (Utility_2015 | ActualFishVolume_2016 AllowableCatchVolume_2015)
 {
- data = ( 0.0 );
+ data = (( 0.0 )
+( 0.0 )
+( 0.0 )
+( 0.0 ));
+}
+
+potential (ActualFishVolume_2017 | ActualFishVolume_2016 AllowableCatchVolume_2016)
+{
+ data = ((( 0.7 0.2 0.1 0.0 ))
+(( 0.1 0.8 0.1 0.0 ))
+(( 0.1 0.2 0.7 0.0 ))
+(( 0.0 0.0 0.0 1.0 )));
 }
 
