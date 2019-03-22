@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.io.mebn.prowl2.owlapi;
 
 import java.util.Collection;
@@ -49,33 +46,23 @@ public class PROWL2IndividualsExtractorImpl implements
 	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2IndividualsExtractor#getPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
 	 */
 	public Collection<OWLIndividual> getPROWL2Individuals(OWLOntology ontology, OWLReasoner reasoner) {
-		// this version does not use a reasoner
+		// this version requires a reasoner
+		if (reasoner == null) {
+			throw new NullPointerException("Current version requires a reasoner");
+		}
 		
 		// return value
 		Collection<OWLIndividual> ret = new HashSet<OWLIndividual>();
 		
-		// initial assertion
-		if (ontology == null) {
-			// no ontology provided. Check if we can extract from reasoner
-			if (reasoner == null || reasoner.getRootOntology() == null) {
-				// we could not extract ontology from reasoner
-				return ret;
-			} else {
-				// reasoner is not null and we can extract ontology from it.
-				ontology = reasoner.getRootOntology();
-			}
-		}
-		
-		// by now, ontology should be non-null
 		
 		// OBS. because of open-world assumption, it is impossible to query individuals that are not declared as PR-OWL2 individuals,
 		
 		// get all classes and check if they are PR-OWL 2 or PR-OWL 1 classes
-		for (OWLClass owlClass : ontology.getClassesInSignature(true)) {
+		for (OWLClass owlClass : reasoner.getSubClasses(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), false).getFlattened()) {
 			try {
 				if (isPROWLClass(owlClass)) {
 					// extract their individuals
-					for (OWLIndividual owlIndividual : owlClass.getIndividuals(ontology.getOWLOntologyManager().getOntologies())) {
+					for (OWLIndividual owlIndividual : reasoner.getInstances(owlClass, false).getFlattened()) {
 						try {
 							if (owlIndividual.isAnonymous()) {
 								continue;
@@ -132,88 +119,5 @@ public class PROWL2IndividualsExtractorImpl implements
 
 	}
 
-//	/*
-//	 * (non-Javadoc)
-//	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2IndividualsExtractor#getNonPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
-//	 */
-//	public Collection<OWLIndividual> getNonPROWL2Individuals( OWLOntology ontology, OWLReasoner reasoner) {
-//		// this version does not use a reasoner
-//		
-//		// return value
-//		Collection<OWLIndividual> ret = new HashSet<OWLIndividual>();
-//		
-//		// initial assertion
-//		if (ontology == null) {
-//			// no ontology provided. Check if we can extract from reasoner
-//			if (reasoner == null || reasoner.getRootOntology() == null) {
-//				// we could not extract ontology from reasoner
-//				return ret;
-//			} else {
-//				// reasoner is not null and we can extract ontology from it.
-//				ontology = reasoner.getRootOntology();
-//			}
-//		}
-//		
-//		// by now, ontology should be non-null
-//		
-//		// OBS. because of open-world assumption, it is impossible to query individuals that are not declared as PR-OWL2 individuals,
-//		
-//		// get all classes and check if they are PR-OWL 2 or PR-OWL 1 classes
-//		for (OWLClass owlClass : ontology.getClassesInSignature(true)) {
-//			try {
-//				if (!isPROWLClass(owlClass)) {
-//					if (owlClass.isOWLThing()) {
-//						// TODO
-//					} else if (owlClass.isOWLNothing()) {
-//						Debug.println(getClass(), "owl:Nothing found: " + owlClass);
-//						continue;	// ignore nothings
-//					} else {
-//						// extract their individuals
-//						for (OWLIndividual owlIndividual : owlClass.getIndividuals(ontology.getOWLOntologyManager().getOntologies())) {
-//							try {
-//								if (owlIndividual.isAnonymous()) {
-//									continue;
-//								}
-//								// do not add individuals declared in PR-OWL2 definition ontology
-//								if (!isIndividualInPROWL2Definition(owlIndividual)) {
-//									ret.add(owlIndividual);
-//								}
-//							} catch (Exception e) {
-//								try {
-//									Debug.println(this.getClass(), e.getMessage(), e);
-//								} catch (Throwable t) {
-//									t.printStackTrace();
-//								}
-//								continue;
-//							}
-//						}
-//					}
-//				}
-//			} catch (Exception e) {
-//				try {
-//					Debug.println(this.getClass(), e.getMessage(), e);
-//				} catch (Throwable t) {
-//					t.printStackTrace();
-//				}
-//				continue;
-//			}
-//		}
-//		
-//		return ret;
-//	}
-//
-//	/**
-//	 * @return the nonPROWL2ClassExtractor: object to be used in order to obtain classes that are not in PR-OWL2 specification
-//	 */
-//	public INonPROWLClassExtractor getNonPROWL2ClassExtractor() {
-//		return nonPROWL2ClassExtractor;
-//	}
-//
-//	/**
-//	 * @param nonPROWL2ClassExtractor : object to be used in order to obtain classes that are not in PR-OWL2 specification
-//	 */
-//	public void setNonPROWL2ClassExtractor(INonPROWLClassExtractor nonPROWL2ClassExtractor) {
-//		this.nonPROWL2ClassExtractor = nonPROWL2ClassExtractor;
-//	}
 
 }
