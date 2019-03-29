@@ -254,7 +254,7 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 * @see unbbayes.io.mebn.MebnIO#getFileExtension()
 	 */
 	public String getFileExtension() {
-		return this.getFileExtension();
+		return FILEEXTENSION;
 	}
 	
 	
