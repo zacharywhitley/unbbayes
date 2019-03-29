@@ -1,11 +1,11 @@
 
 package unbbayes.learning;
 
-import java.util.ArrayList; 
+import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.controller.MainController; 
-import unbbayes.prs.Edge; 
+import unbbayes.controller.MainController;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.PotentialTable;
@@ -169,6 +169,8 @@ public class TextModeLearningToolkit extends LearningToolkit {
     					childInNet.appendState(childInTopology.getStateAt(stateIndex));
 					}
     				getLearnedNet().addNode(childInNet);
+    				// make sure nodes are not placed all over position (0,0) in canvas.
+    				adjustPosition(getLearnedNet().getNodeIndex(childInNet.getName()), getLearnedNet());
     				newNodes.add((ProbabilisticNode) childInNet);
     			}
     			
@@ -188,6 +190,8 @@ public class TextModeLearningToolkit extends LearningToolkit {
 							parentInNet.appendState(parentInTopology.getStateAt(stateIndex));
 						}
         				getLearnedNet().addNode(parentInNet);
+        				// make sure nodes are not placed all over position (0,0) in canvas.
+        				adjustPosition(getLearnedNet().getNodeIndex(parentInNet.getName()), getLearnedNet());
         				newNodes.add((ProbabilisticNode) parentInNet);
         			}
     				if (getLearnedNet().hasEdge(parentInNet, childInNet) >= 0) {
@@ -234,18 +238,32 @@ public class TextModeLearningToolkit extends LearningToolkit {
     	} else {
 			// adjust position of nodes without using specific topology
     		ProbabilisticNetwork net = getLearnedNet();
-    		double pivotX = 0, pivotY = 0;
     		for (int nodeIndex = 0; nodeIndex < net.getNodeCount(); nodeIndex++) {
-    			Node n = net.getNodeAt(nodeIndex);
-				n.setPosition( pivotX, pivotY);
-				pivotX += 120;
-				pivotY = ( ( (nodeIndex % 4) * 100 ) + 10) ;
+    			adjustPosition(nodeIndex, net);
 			}
     	}
     	 
 		return getLearnedNet();
 	}
 	
+	/**
+	 * Simply moves a node to some (x,y) position in the canvas
+	 * based on an algorithm proportional to the index of the node in the network.
+	 * This can be used to automatically place a node to some position in the canvas,
+	 * in order to avoid placing all nodes in same (x,y) position.
+	 * @param nodeIndex : index of the node in the network
+	 * @param net : net containing the node to move.
+	 */
+	protected void adjustPosition(int nodeIndex, ProbabilisticNetwork net) {
+		Node n = net.getNodeAt(nodeIndex);
+		if (n == null) {
+			throw new IndexOutOfBoundsException(nodeIndex + " is not a valid node index in network " + net);
+		}
+		double x = 120*nodeIndex;
+		double y = ( ( (nodeIndex % 4) * 100 ) + 10) ;
+		n.setPosition( x, y);
+	}
+
 	/**
 	 * execute parameter learning 
 	 */
