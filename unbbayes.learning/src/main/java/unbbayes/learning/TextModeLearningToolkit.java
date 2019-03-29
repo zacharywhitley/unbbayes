@@ -13,6 +13,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
+import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto; Edited by Young
@@ -146,11 +147,29 @@ public class TextModeLearningToolkit extends LearningToolkit {
     	setLearnedNet(this.instantiateProbabilisticNetwork(getVariables()));
     	
     	if (topology != null) {
+    		
+    		List<ProbabilisticNode> newNodes = new ArrayList<>(topology.getNodeCount());
+    		
     		// reuse arcs. TODO avoid cycles
-    		for (Node childInNet : getVariables()) {
-    			Node childInTopology = topology.getNode(childInNet.getName());
+    		for (Node childInTopology : topology.getNodes()) {
     			if (childInTopology == null) {
+    				Debug.println(getClass(), "Found a null node in the list of nodes of network " 
+    									+ topology + ". Ignoring...");
     				continue;	// only consider nodes that are present in topology
+    			}
+    			Node childInNet = getLearnedNet().getNode(childInTopology.getName());
+    			if (childInNet == null) {
+    				// create the node if it was not present in the learned net already
+    				childInNet = new ProbabilisticNode();
+    				childInNet.setName(childInTopology.getName());
+    				childInNet.setDescription(childInTopology.getDescription());
+    				((ProbabilisticNode)childInNet).getProbabilityFunction().addVariable(childInNet);
+    				// making sure the new node has same states of its original
+    				for (int stateIndex = 0; stateIndex < childInTopology.getStatesSize(); stateIndex++) {
+    					childInNet.appendState(childInTopology.getStateAt(stateIndex));
+					}
+    				getLearnedNet().addNode(childInNet);
+    				newNodes.add((ProbabilisticNode) childInNet);
     			}
     			
     			// reuse (x,y) position
@@ -159,7 +178,17 @@ public class TextModeLearningToolkit extends LearningToolkit {
     			for (Node parentInTopology : childInTopology.getParents()) {
     				Node parentInNet = getLearnedNet().getNode(parentInTopology.getName());
     				if (parentInNet == null) {
-        				continue;	// only consider nodes that are present in learned net
+        				// create the node if it was not present in the learned net already
+    					parentInNet = new ProbabilisticNode();
+    					parentInNet.setName(parentInTopology.getName());
+    					parentInNet.setDescription(parentInTopology.getDescription());
+        				((ProbabilisticNode)parentInNet).getProbabilityFunction().addVariable(parentInNet);
+        				// making sure the new node has same states of its original
+        				for (int stateIndex = 0; stateIndex < parentInTopology.getStatesSize(); stateIndex++) {
+							parentInNet.appendState(parentInTopology.getStateAt(stateIndex));
+						}
+        				getLearnedNet().addNode(parentInNet);
+        				newNodes.add((ProbabilisticNode) parentInNet);
         			}
     				if (getLearnedNet().hasEdge(parentInNet, childInNet) >= 0) {
     					continue;	// ignore arcs that already exist
@@ -167,9 +196,41 @@ public class TextModeLearningToolkit extends LearningToolkit {
     				parentInNet.getChildren().add(childInNet); 
     				childInNet.getParents().add(parentInNet);
     				Edge edge = new Edge(parentInNet, childInNet);
-    				getLearnedNet().getEdges().add(edge);
+    				// the following will avoid making automatic changes to sizes of CPTs, 
+    				// compared to getLearnedNet().addEdge(edge);
+    				getLearnedNet().getEdges().add(edge);	
     			} 
-    		}   
+    			
+    		}	// end of for each child in topology
+    		
+    		// populate potential tables of newly created nodes from their original CPTs
+    		for (ProbabilisticNode newNode : newNodes) {
+    			Node originalNode = topology.getNode(newNode.getName());
+    			if (originalNode == null
+    					|| !(originalNode instanceof ProbabilisticNode)) {
+    				throw new RuntimeException("Failed to retrieve node " + newNode 
+    						+ " from topology network, even though node is supposedly created. This can be a bug in the algorithm.");
+    			}
+    			if (originalNode.getStatesSize() != newNode.getStatesSize()) {
+    				throw new RuntimeException("Node in topology had " + originalNode.getStatesSize() 
+    				+ " states, while a new node created in the algorithm has " + newNode.getStatesSize() 
+    				+ " states. This is probably a bug in the algorithm.");
+    			}
+    			// TODO do we need to check if the ordering of states also matches?
+    			
+    			// will reuse the CPT from original (topology) network.
+    			PotentialTable originalTable = ((ProbabilisticNode)originalNode).getProbabilityFunction();
+    			PotentialTable newTable = newNode.getProbabilityFunction();
+    			// make sure the variables are in the same order
+    			for (int varIndex = 0; varIndex < newNode.getStatesSize(); varIndex++) {
+    				if (!originalTable.getVariableAt(varIndex).equals(newTable.getVariableAt(varIndex))) {
+    					throw new RuntimeException(
+    							"Indexes of variables in new table does not match with original table. This can be a bug in the libraries.");
+    				}
+    			}
+    			// since parents of new nodes are added in same ordering of original network, we can clone CPT
+    			newTable.setValues(originalTable.getValues());
+    		}
     	} else {
 			// adjust position of nodes without using specific topology
     		ProbabilisticNetwork net = getLearnedNet();
