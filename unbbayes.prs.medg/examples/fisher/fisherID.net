@@ -1,241 +1,290 @@
 net
 {
      node_size = (0 0);
-     name = "AutomaticallyCreatedNet";
-     tree = "(ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,year2012),ActualFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2016),ObservedFishVolume(NorthSea,YEAR2013),ObservedFishVolume(NorthSea,YEAR2014),ObservedFishVolume(NorthSea,YEAR2015),ActualFishVolume(NorthSea,YEAR2016),ActualFishVolume(NorthSea,year2015),ActualFishVolume(NorthSea,YEAR2013),ActualFishVolume(NorthSea,YEAR2014))";
+     name = "UtilitySea_NORTHSEA_YEAR2016UtilitySea_NORTHSEA_YEAR2014UtilitySea_NORTHSEA_YEAR2015UtilitySea_NORTHSEA_YEAR2012UtilitySea_NORTHSEA_YEAR2013";
+     tree = "(ActualFishVolume(NORTHSEA,YEAR2015),ActualFishVolume(NORTHSEA,YEAR2016),ActualFishVolume(NORTHSEA,YEAR2013),ActualFishVolume(NORTHSEA,YEAR2014),ObservedFishVolume(NORTHSEA,YEAR2014),ObservedFishVolume(NORTHSEA,YEAR2015),ActualFishVolume(NORTHSEA,YEAR2012),ObservedFishVolume(NORTHSEA,YEAR2013),ActualFishVolume(NORTHSEA,YEAR2015),ActualFishVolume(NORTHSEA,YEAR2016),ActualFishVolume(NORTHSEA,YEAR2013),ActualFishVolume(NORTHSEA,YEAR2014),ObservedFishVolume(NORTHSEA,YEAR2014),ObservedFishVolume(NORTHSEA,YEAR2015),ActualFishVolume(NORTHSEA,YEAR2012),ObservedFishVolume(NORTHSEA,YEAR2013))";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
 }
 
-node ObservedFishVolume_2016
+utility UtilitySea__NORTHSEA_YEAR2014
 {
-     label = "ObservedFishVolume(NorthSea,YEAR2016)";
-     position = (736 174);
+     label = "UtilitySea(NORTHSEA,YEAR2014)";
+     position = (869 210);
+}
+
+utility UtilitySea__NORTHSEA_YEAR2015
+{
+     label = "UtilitySea(NORTHSEA,YEAR2015)";
+     position = (1268 201);
+}
+
+utility UtilitySea__NORTHSEA_YEAR2012
+{
+     label = "UtilitySea(NORTHSEA,YEAR2012)";
+     position = (79 222);
+}
+
+utility UtilitySea__NORTHSEA_YEAR2013
+{
+     label = "UtilitySea(NORTHSEA,YEAR2013)";
+     position = (467 212);
+}
+
+node ActualFishVolume__NORTHSEA_YEAR2015
+{
+     label = "ActualFishVolume(NORTHSEA,YEAR2015)";
+     position = (1056 43);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ObservedFishVolume_2013
+decision AllowableCatchVolume__NORTHSEA_YEAR2014
 {
-     label = "ObservedFishVolume(NorthSea,YEAR2013)";
-     position = (68 174);
+     label = "AllowableCatchVolume(NORTHSEA,YEAR2014)";
+     position = (831 99);
+     states = ("Low" "Medium" "High");
+}
+
+node ActualFishVolume__NORTHSEA_YEAR2016
+{
+     label = "ActualFishVolume(NORTHSEA,YEAR2016)";
+     position = (1443 37);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ObservedFishVolume_2014
+decision AllowableCatchVolume__NORTHSEA_YEAR2015
 {
-     label = "ObservedFishVolume(NorthSea,YEAR2014)";
-     position = (283 174);
+     label = "AllowableCatchVolume(NORTHSEA,YEAR2015)";
+     position = (1228 97);
+     states = ("Low" "Medium" "High");
+}
+
+node ActualFishVolume__NORTHSEA_YEAR2013
+{
+     label = "ActualFishVolume(NORTHSEA,YEAR2013)";
+     position = (268 44);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ObservedFishVolume_2015
+decision AllowableCatchVolume__NORTHSEA_YEAR2012
 {
-     label = "ObservedFishVolume(NorthSea,YEAR2015)";
-     position = (504 174);
+     label = "AllowableCatchVolume(NORTHSEA,YEAR2012)";
+     position = (34 109);
+     states = ("Low" "Medium" "High");
+}
+
+node ActualFishVolume__NORTHSEA_YEAR2014
+{
+     label = "ActualFishVolume(NORTHSEA,YEAR2014)";
+     position = (655 46);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ActualFishVolume_2016
+decision AllowableCatchVolume__NORTHSEA_YEAR2013
 {
-     label = "ActualFishVolume(NorthSea,YEAR2016)";
-     position = (746 41);
+     label = "AllowableCatchVolume(NORTHSEA,YEAR2013)";
+     position = (430 110);
+     states = ("Low" "Medium" "High");
+}
+
+node ObservedFishVolume__NORTHSEA_YEAR2014
+{
+     label = "ObservedFishVolume(NORTHSEA,YEAR2014)";
+     position = (646 165);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ActualFishVolume_2015
+node ObservedFishVolume__NORTHSEA_YEAR2015
 {
-     label = "ActualFishVolume(NorthSea,year2015)";
-     position = (514 42);
+     label = "ObservedFishVolume(NORTHSEA,YEAR2015)";
+     position = (1049 166);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ActualFishVolume_2013
+node ActualFishVolume__NORTHSEA_YEAR2012
 {
-     label = "ActualFishVolume(NorthSea,YEAR2013)";
-     position = (79 45);
+     label = "ActualFishVolume(NORTHSEA,YEAR2012)";
+     position = (19 45);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-node ActualFishVolume_2014
+node ObservedFishVolume__NORTHSEA_YEAR2013
 {
-     label = "ActualFishVolume(NorthSea,YEAR2014)";
-     position = (294 42);
+     label = "ObservedFishVolume(NORTHSEA,YEAR2013)";
+     position = (257 171);
      states = ("Low" "Medium" "High" "absurd");
 }
 
-decision AllowableCatchVolume_2013
+potential (UtilitySea__NORTHSEA_YEAR2014 | AllowableCatchVolume__NORTHSEA_YEAR2014 ActualFishVolume__NORTHSEA_YEAR2015)
 {
-     label = "D1";
-     position = (174 104);
-     states = ("Action 0");
+ data = (( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ));
 }
 
-utility Utility_2013
+potential (UtilitySea__NORTHSEA_YEAR2015 | AllowableCatchVolume__NORTHSEA_YEAR2015 ActualFishVolume__NORTHSEA_YEAR2016)
 {
-     label = "U2";
-     position = (223 231);
+ data = (( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ));
 }
 
-utility Utility_2014
+potential (UtilitySea__NORTHSEA_YEAR2012 | AllowableCatchVolume__NORTHSEA_YEAR2012 ActualFishVolume__NORTHSEA_YEAR2013)
 {
-     label = "U4";
-     position = (442 231);
+ data = (( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ));
 }
 
-decision AllowableCatchVolume_2014
+potential (UtilitySea__NORTHSEA_YEAR2013 | AllowableCatchVolume__NORTHSEA_YEAR2013 ActualFishVolume__NORTHSEA_YEAR2014)
 {
-     label = "D5";
-     position = (393 103);
-     states = ("Action 0");
+ data = (( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ));
 }
 
-decision AllowableCatchVolume_2015
+potential (ActualFishVolume__NORTHSEA_YEAR2015 | ActualFishVolume__NORTHSEA_YEAR2014 AllowableCatchVolume__NORTHSEA_YEAR2014)
 {
-     label = "D6";
-     position = (616 103);
-     states = ("Action 0");
-}
-
-decision AllowableCatchVolume_2016
-{
-     label = "D7";
-     position = (849 103);
-     states = ("Action 0");
-}
-
-utility Utility_2016
-{
-     label = "U8";
-     position = (898 231);
-}
-
-utility Utility_2015
-{
-     label = "U9";
-     position = (664 231);
-}
-
-node ActualFishVolume_2017
-{
-     label = "C1";
-     position = (966 38);
-     states = ("Low" "Medium" "High" "absurd");
-}
-
-potential (ObservedFishVolume_2016 | ActualFishVolume_2016)
-{
- data = (( 0.9 0.050000012 0.050000012 0.0 )
+ data = ((( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
 ( 0.050000012 0.9 0.050000012 0.0 )
-( 0.050000012 0.050000012 0.9 0.0 )
-( 0.0 0.0 0.0 1.0 ));
-}
-
-potential (ObservedFishVolume_2013 | ActualFishVolume_2013)
-{
- data = (( 0.9 0.050000012 0.050000012 0.0 )
-( 0.050000012 0.9 0.050000012 0.0 )
-( 0.050000012 0.050000012 0.9 0.0 )
-( 0.0 0.0 0.0 1.0 ));
-}
-
-potential (ObservedFishVolume_2014 | ActualFishVolume_2014)
-{
- data = (( 0.9 0.050000012 0.050000012 0.0 )
-( 0.050000012 0.9 0.050000012 0.0 )
-( 0.050000012 0.050000012 0.9 0.0 )
-( 0.0 0.0 0.0 1.0 ));
-}
-
-potential (ObservedFishVolume_2015 | ActualFishVolume_2015)
-{
- data = (( 0.9 0.050000012 0.050000012 0.0 )
-( 0.050000012 0.9 0.050000012 0.0 )
-( 0.050000012 0.050000012 0.9 0.0 )
-( 0.0 0.0 0.0 1.0 ));
-}
-
-potential (ActualFishVolume_2016 | AllowableCatchVolume_2015 ActualFishVolume_2015)
-{
- data = ((( 0.7 0.2 0.1 0.0 )
-( 0.1 0.8 0.1 0.0 )
-( 0.1 0.2 0.7 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 ))
+(( 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 1.0 )
 ( 0.0 0.0 0.0 1.0 )));
 }
 
-potential (ActualFishVolume_2015 | AllowableCatchVolume_2014 ActualFishVolume_2014)
+potential (AllowableCatchVolume__NORTHSEA_YEAR2014 | ObservedFishVolume__NORTHSEA_YEAR2014)
 {
- data = ((( 0.7 0.2 0.1 0.0 )
-( 0.1 0.8 0.1 0.0 )
-( 0.1 0.2 0.7 0.0 )
+}
+
+potential (ActualFishVolume__NORTHSEA_YEAR2016 | ActualFishVolume__NORTHSEA_YEAR2015 AllowableCatchVolume__NORTHSEA_YEAR2015)
+{
+ data = ((( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 ))
+(( 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 1.0 )
 ( 0.0 0.0 0.0 1.0 )));
 }
 
-potential (ActualFishVolume_2013)
+potential (AllowableCatchVolume__NORTHSEA_YEAR2015 | ObservedFishVolume__NORTHSEA_YEAR2015)
 {
- data = ( 0.25 0.25 0.25 0.25 );
 }
 
-potential (ActualFishVolume_2014 | AllowableCatchVolume_2013 ActualFishVolume_2013)
+potential (ActualFishVolume__NORTHSEA_YEAR2013 | ActualFishVolume__NORTHSEA_YEAR2012 AllowableCatchVolume__NORTHSEA_YEAR2012)
 {
- data = ((( 0.7 0.2 0.1 0.0 )
-( 0.1 0.8 0.1 0.0 )
-( 0.1 0.2 0.7 0.0 )
+ data = ((( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 ))
+(( 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 1.0 )
 ( 0.0 0.0 0.0 1.0 )));
 }
 
-potential (AllowableCatchVolume_2013 | ObservedFishVolume_2013)
+potential (AllowableCatchVolume__NORTHSEA_YEAR2012)
 {
 }
 
-potential (Utility_2013 | ActualFishVolume_2014 AllowableCatchVolume_2013)
+potential (ActualFishVolume__NORTHSEA_YEAR2014 | ActualFishVolume__NORTHSEA_YEAR2013 AllowableCatchVolume__NORTHSEA_YEAR2013)
 {
- data = (( 0.0 )
-( 0.0 )
-( 0.0 )
-( 0.0 ));
+ data = ((( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 )
+( 1.0 0.0 0.0 0.0 ))
+(( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.9 0.050000012 0.050000012 0.0 ))
+(( 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 1.0 )));
 }
 
-potential (Utility_2014 | ActualFishVolume_2015 AllowableCatchVolume_2014)
-{
- data = (( 0.0 )
-( 0.0 )
-( 0.0 )
-( 0.0 ));
-}
-
-potential (AllowableCatchVolume_2014 | ObservedFishVolume_2014)
-{
-}
-
-potential (AllowableCatchVolume_2015 | ObservedFishVolume_2015)
+potential (AllowableCatchVolume__NORTHSEA_YEAR2013 | ObservedFishVolume__NORTHSEA_YEAR2013)
 {
 }
 
-potential (AllowableCatchVolume_2016 | ObservedFishVolume_2016)
+potential (ObservedFishVolume__NORTHSEA_YEAR2014 | ActualFishVolume__NORTHSEA_YEAR2014)
 {
+ data = (( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.050000012 0.050000012 0.9 0.0 )
+( 0.0 0.0 0.0 1.0 ));
 }
 
-potential (Utility_2016 | ActualFishVolume_2017 AllowableCatchVolume_2016)
+potential (ObservedFishVolume__NORTHSEA_YEAR2015 | ActualFishVolume__NORTHSEA_YEAR2015)
 {
- data = (( 0.0 )
-( 0.0 )
-( 0.0 )
-( 0.0 ));
+ data = (( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.050000012 0.050000012 0.9 0.0 )
+( 0.0 0.0 0.0 1.0 ));
 }
 
-potential (Utility_2015 | ActualFishVolume_2016 AllowableCatchVolume_2015)
+potential (ActualFishVolume__NORTHSEA_YEAR2012)
 {
- data = (( 0.0 )
-( 0.0 )
-( 0.0 )
-( 0.0 ));
+ data = ( 0.33333334 0.33333334 0.33333334 0.0 );
 }
 
-potential (ActualFishVolume_2017 | ActualFishVolume_2016 AllowableCatchVolume_2016)
+potential (ObservedFishVolume__NORTHSEA_YEAR2013 | ActualFishVolume__NORTHSEA_YEAR2013)
 {
- data = ((( 0.7 0.2 0.1 0.0 ))
-(( 0.1 0.8 0.1 0.0 ))
-(( 0.1 0.2 0.7 0.0 ))
-(( 0.0 0.0 0.0 1.0 )));
+ data = (( 0.9 0.050000012 0.050000012 0.0 )
+( 0.050000012 0.9 0.050000012 0.0 )
+( 0.050000012 0.050000012 0.9 0.0 )
+( 0.0 0.0 0.0 1.0 ));
 }
 

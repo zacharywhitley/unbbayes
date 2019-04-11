@@ -4,10 +4,10 @@ PrOwl="fisher.owl"
 
 % UBF MTheory declaration
 MTheory=MEBN
-NextMFrag=3
-NextResident=7
-NextInput=3
-NextContext=3
+NextMFrag=4
+NextResident=8
+NextInput=5
+NextContext=5
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
@@ -39,13 +39,6 @@ Position=16.0,229.0
 Size=232,60
 Color=-14336
 PossibleValuesOrder=Low,Medium,High
-
-Node=UtilitySea
-Type=DomainResidentNode
-Position=289.0,229.0
-Size=117,60
-Color=-16711681
-PossibleValuesOrder=utility
 
 % Input nodes
 
@@ -126,6 +119,71 @@ Node=t
 Type=OrdinalVar
 Position=107.0,82.0
 Size=134,60
+Color=-5178237
+
+% MFrag
+MFrag=UtilityMFrag
+NextOrdinaryVar=4
+
+% Resident nodes
+
+
+Node=UtilitySea
+Type=DomainResidentNode
+Position=154.0,224.0
+Size=163,60
+Color=-16711681
+PossibleValuesOrder=utility
+
+% Input nodes
+
+
+Node=IX3
+Type=GenerativeInputNode
+Position=29.0,142.0
+Size=236,60
+Color=-2302756
+
+Node=IX4
+Type=GenerativeInputNode
+Position=253.0,142.0
+Size=184,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX3
+Type=ContextNode
+Position=35.0,73.0
+Size=172,60
+Color=-5178237
+
+Node=CX4
+Type=ContextNode
+Position=198.0,72.0
+Size=163,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=sea
+Type=OrdinalVar
+Position=28.0,27.0
+Size=121,60
+Color=-5178237
+
+Node=t
+Type=OrdinalVar
+Position=143.0,25.0
+Size=134,60
+Color=-5178237
+
+Node=tPrev
+Type=OrdinalVar
+Position=272.0,25.0
+Size=158,60
 Color=-5178237
 
 % Object Entity Instances
