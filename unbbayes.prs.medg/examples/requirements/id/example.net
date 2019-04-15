@@ -1,0 +1,258 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     tree = "(C3,C4,C5,C6,C7,C8,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C20)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+utility transitionCost__MYCONFIG_MONTECARLO
+{
+     label = "U1";
+     position = (302 568);
+}
+
+utility retribution__MYCONFIG
+{
+     label = "U2";
+     position = (815 594);
+}
+
+node userSatisfaction_MYCONFIG
+{
+     label = "C3";
+     position = (941 435);
+     states = ("None" "Low" "Mid" "High" "absurd");
+}
+
+node usabilityScore_MYCONFIG
+{
+     label = "C4";
+     position = (838 293);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+node isGoodSuggestion__MYCONFIG_MONTECARLO
+{
+     label = "C5";
+     position = (1113 256);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestion__MYCONFIG_MONTECARLO
+{
+     label = "C6";
+     position = (405 184);
+     states = ("false" "true" "absurd");
+}
+
+node fulfills__MONTECARLO_FREQUENTLEARNING
+{
+     label = "C7";
+     position = (1063 137);
+     states = ("false" "true" "absurd");
+}
+
+node fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL
+{
+     label = "C8";
+     position = (700 41);
+     states = ("false" "true" "absurd");
+}
+
+node fulfills__LEARNING_REQUIRESDATADRIVENMODEL
+{
+     label = "C14";
+     position = (159 41);
+     states = ("false" "true" "absurd");
+}
+
+node isStorageRequirement__REQUIRESDATADRIVENMODEL
+{
+     label = "C19";
+     position = (26 215);
+     states = ("false" "true" "absurd");
+}
+
+node isBNStorageFeature__MONTECARLO
+{
+     label = "C20";
+     position = (29 122);
+     states = ("false" "true" "absurd");
+}
+
+decision incorporateFeature__MYCONFIG_MONTECARLO
+{
+     label = "D1";
+     position = (289 384);
+     states = ("false" "true" "absurd");
+}
+
+potential (transitionCost__MYCONFIG_MONTECARLO | incorporateFeature__MYCONFIG_MONTECARLO)
+{
+ data = ( 0.0 
+ 0.0 
+}
+
+potential (retribution__MYCONFIG | userSatisfaction_MYCONFIG)
+{
+ data = ( 155.0 
+ 155.0 
+ 155.0 
+ 155.0 
+ 155.0 );
+}
+
+potential (userSatisfaction_MYCONFIG | isGoodSuggestion__MYCONFIG_MONTECARLO usabilityScore_MYCONFIG)
+{
+ data = ((( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 ))
+(( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 ))
+(( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )
+( 0.25 0.25 0.25 0.25 0.0 )));
+}
+
+potential (usabilityScore_MYCONFIG | hasSuggestion__MYCONFIG_MONTECARLO)
+{
+ data = (( 0.33333334 0.33333334 0.33333334 0.0 )
+( 0.33333334 0.33333334 0.33333334 0.0 )
+( 0.33333334 0.33333334 0.33333334 0.0 ));
+}
+
+potential (isGoodSuggestion__MYCONFIG_MONTECARLO | fulfills__MONTECARLO_FREQUENTLEARNING hasSuggestion__MYCONFIG_MONTECARLO)
+{
+ data = ((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )));
+}
+
+potential (hasSuggestion__MYCONFIG_MONTECARLO | isBNStorageFeature__MONTECARLO isStorageRequirement__REQUIRESDATADRIVENMODEL fulfills__LEARNING_REQUIRESDATADRIVENMODEL fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL)
+{
+ data = ((((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))))
+(((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))))
+(((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))
+((( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ))
+(( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )))));
+}
+
+potential (fulfills__MONTECARLO_FREQUENTLEARNING | fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL)
+{
+ data = (( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 )
+( 0.5 0.5 0.0 ));
+}
+
+potential (fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL)
+{
+ data = ( 0.5 0.5 0.0 );
+}
+
+potential (fulfills__LEARNING_REQUIRESDATADRIVENMODEL)
+{
+ data = ( 0.5 0.5 0.0 );
+}
+
+potential (isStorageRequirement__REQUIRESDATADRIVENMODEL)
+{
+ data = ( 1.0 0.0 0.0 );
+}
+
+potential (isBNStorageFeature__MONTECARLO)
+{
+ data = ( 1.0 0.0 0.0 );
+}
+
+potential (incorporateFeature__MYCONFIG_MONTECARLO | hasSuggestion__MYCONFIG_MONTECARLO)
+{
+}
+
