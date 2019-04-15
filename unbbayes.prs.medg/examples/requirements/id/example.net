@@ -16,7 +16,7 @@ utility transitionCost__MYCONFIG_MONTECARLO
 utility retribution__MYCONFIG
 {
      label = "U2";
-     position = (815 594);
+     position = (760 582);
 }
 
 node userSatisfaction_MYCONFIG
@@ -36,7 +36,7 @@ node usabilityScore_MYCONFIG
 node isGoodSuggestion__MYCONFIG_MONTECARLO
 {
      label = "C5";
-     position = (1113 256);
+     position = (1118 270);
      states = ("false" "true" "absurd");
 }
 
@@ -50,14 +50,14 @@ node hasSuggestion__MYCONFIG_MONTECARLO
 node fulfills__MONTECARLO_FREQUENTLEARNING
 {
      label = "C7";
-     position = (1063 137);
+     position = (1018 167);
      states = ("false" "true" "absurd");
 }
 
 node fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL
 {
      label = "C8";
-     position = (700 41);
+     position = (734 114);
      states = ("false" "true" "absurd");
 }
 
@@ -71,37 +71,62 @@ node fulfills__LEARNING_REQUIRESDATADRIVENMODEL
 node isStorageRequirement__REQUIRESDATADRIVENMODEL
 {
      label = "C19";
-     position = (0 292);
+     position = (80 292);
      states = ("false" "true" "absurd");
 }
 
 node isBNStorageFeature__MONTECARLO
 {
      label = "C20";
-     position = (29 122);
+     position = (35 142);
      states = ("false" "true" "absurd");
 }
 
 decision incorporateFeature__MYCONFIG_MONTECARLO
 {
      label = "D1";
-     position = (289 384);
+     position = (292 386);
+     states = ("false" "true" "absurd");
+}
+
+node fulfills__MONTECARLO_REQUIRESSUPPORTTXTDATA
+{
+     label = "C1";
+     position = (764 0);
+     states = ("false" "true" "absurd");
+}
+
+node fulfills__MONTECARLO_REQUIRESSAMPLING
+{
+     label = "C2";
+     position = (1139 52);
      states = ("false" "true" "absurd");
 }
 
 potential (transitionCost__MYCONFIG_MONTECARLO | incorporateFeature__MYCONFIG_MONTECARLO)
 {
  data = ( 0.0 
- -20.0 
+ -5.0 
+ 0.0 );
 }
 
-potential (retribution__MYCONFIG | userSatisfaction_MYCONFIG)
+potential (retribution__MYCONFIG | incorporateFeature__MYCONFIG_MONTECARLO userSatisfaction_MYCONFIG)
 {
- data = ( -100.0 
- -50.0 
- 50.0 
- 100.0 
- 0.0 );
+ data = (( 0.0 
+ 0.0 
+ 0.0 
+ 0.0 
+ 0.0 )
+( -100.0 
+ 5.0 
+ 60.0 
+ 150.0 
+ 0.0 )
+( 0.0 
+ 0.0 
+ 0.0 
+ 0.0 
+ 0.0 ));
 }
 
 potential (userSatisfaction_MYCONFIG | isGoodSuggestion__MYCONFIG_MONTECARLO usabilityScore_MYCONFIG)
@@ -122,8 +147,8 @@ potential (userSatisfaction_MYCONFIG | isGoodSuggestion__MYCONFIG_MONTECARLO usa
 
 potential (usabilityScore_MYCONFIG | hasSuggestion__MYCONFIG_MONTECARLO)
 {
- data = (( 1.0 0.0 0.0 0.0 )
-( 0.2 0.4 0.4 0.0 )
+ data = (( 0.8 0.1 0.1 0.0 )
+( 0.2 0.3 0.5 0.0 )
 ( 0.0 0.0 0.0 1.0 ));
 }
 
@@ -232,9 +257,11 @@ potential (fulfills__MONTECARLO_FREQUENTLEARNING | fulfills__MONTECARLO_REQUIRES
 ( 0.0 0.0 1.0 ));
 }
 
-potential (fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL)
+potential (fulfills__MONTECARLO_REQUIRESDATADRIVENMODEL | fulfills__MONTECARLO_REQUIRESSUPPORTTXTDATA)
 {
- data = ( 0.5 0.5 0.0 );
+ data = (( 0.8 0.2 0.0 )
+( 0.2 0.8 0.0 )
+( 0.0 0.0 1.0 ));
 }
 
 potential (fulfills__LEARNING_REQUIRESDATADRIVENMODEL)
@@ -254,5 +281,17 @@ potential (isBNStorageFeature__MONTECARLO)
 
 potential (incorporateFeature__MYCONFIG_MONTECARLO | hasSuggestion__MYCONFIG_MONTECARLO)
 {
+}
+
+potential (fulfills__MONTECARLO_REQUIRESSUPPORTTXTDATA)
+{
+ data = ( 0.5 0.5 0.0 );
+}
+
+potential (fulfills__MONTECARLO_REQUIRESSAMPLING | fulfills__MONTECARLO_REQUIRESSUPPORTTXTDATA)
+{
+ data = (( 0.8 0.2 0.0 )
+( 0.2 0.8 0.0 )
+( 0.0 0.0 1.0 ));
 }
 
