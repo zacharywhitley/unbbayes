@@ -92,16 +92,16 @@ decision incorporateFeature__MYCONFIG_MONTECARLO
 potential (transitionCost__MYCONFIG_MONTECARLO | incorporateFeature__MYCONFIG_MONTECARLO)
 {
  data = ( 0.0 
- 0.0 
+ -20.0 
 }
 
 potential (retribution__MYCONFIG | userSatisfaction_MYCONFIG)
 {
- data = ( 155.0 
- 155.0 
- 155.0 
- 155.0 
- 155.0 );
+ data = ( -100.0 
+ -50.0 
+ 50.0 
+ 100.0 
+ 0.0 );
 }
 
 potential (userSatisfaction_MYCONFIG | isGoodSuggestion__MYCONFIG_MONTECARLO usabilityScore_MYCONFIG)
