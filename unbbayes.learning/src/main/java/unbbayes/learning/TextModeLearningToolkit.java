@@ -225,12 +225,16 @@ public class TextModeLearningToolkit extends LearningToolkit {
     			// will reuse the CPT from original (topology) network.
     			PotentialTable originalTable = ((ProbabilisticNode)originalNode).getProbabilityFunction();
     			PotentialTable newTable = newNode.getProbabilityFunction();
+    			
     			// make sure the variables are in the same order
-    			for (int varIndex = 0; varIndex < newNode.getStatesSize(); varIndex++) {
-    				if (!originalTable.getVariableAt(varIndex).equals(newTable.getVariableAt(varIndex))) {
-    					throw new RuntimeException(
-    							"Indexes of variables in new table does not match with original table. This can be a bug in the libraries.");
-    				}
+    			// start from index 1, because index 0 is the node (owner) itself, and it is already included.
+    			for (int varIndex = 1; varIndex < originalTable.getVariablesSize(); varIndex++) {
+    				Node varInNet = getLearnedNet().getNode(originalTable.getVariableAt(varIndex).getName());
+    				newTable.addVariable(varInNet);
+//    				if (!originalTable.getVariableAt(varIndex).equals(newTable.getVariableAt(varIndex))) {
+//    					throw new RuntimeException(
+//    							"Indexes of variables in new table does not match with original table. This can be a bug in the libraries.");
+//    				}
     			}
     			// since parents of new nodes are added in same ordering of original network, we can clone CPT
     			newTable.setValues(originalTable.getValues());
