@@ -27,22 +27,6 @@ import unbbayes.datamining.discretize.sample.TriangularDistributionSampler;
  */
 public class DiscretizationTest {
 
-	private IDiscretizationFactory discretizationFactory = new RangeDiscretizationWithZeroFactory();
-//	private IDiscretizationFactory discretizationFactory = new FrequencyDiscretizationWithZeroFactory();
-	
-	private File inputFile;
-	{
-		URL url = getClass().getResource("dataToDiscretize.txt");
-		assertNotNull(url);
-		try {
-			inputFile = new File(url.toURI());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	private File outputFile = new File("discretized.txt");
-
 	private int maxBinThreshold = 50;
 
 	public DiscretizationTest() {}
@@ -54,10 +38,23 @@ public class DiscretizationTest {
 	@Test
 	public final void testFrequencyDiscretizationWithZero() throws Exception {
 		
+		
 		int expectedNumData = 3582;
 		int expectedNumAttributes = 49;
 		
-		File file = getInputFile();
+		// use range discretization
+//		IDiscretizationFactory discretizationFactory = new RangeDiscretizationWithZeroFactory();
+		// use frequency discretization
+		IDiscretizationFactory discretizationFactory = new FrequencyDiscretizationWithZeroFactory();
+		
+		// file to output
+		File outputFile = new File("discretizedRange_" + System.currentTimeMillis() + ".txt");
+		outputFile.delete();	// delete old file
+		
+		// input file
+		URL url = getClass().getResource("dataToDiscretize.txt");
+		assertNotNull(url);
+		File file = new File(url.toURI());
 		assertTrue(file.exists());
 		
 		// read initial 4 rows in order to check for properties of the data
@@ -127,7 +124,7 @@ public class DiscretizationTest {
 		assertNotNull(dataSet);
 		
 		// instantiate discretizer
-		IDiscretization discretization = getDiscretizationFactory().buildInstance(dataSet);
+		IDiscretization discretization = discretizationFactory.buildInstance(dataSet);
 		dataSet = discretization.getInstances();	// use the exact instance used by discretizer (because it may be a clone)
 		assertNotNull(dataSet);
 		
@@ -167,8 +164,8 @@ public class DiscretizationTest {
 			
 			// do not use frequency larger than distinct values
 			int numThresholds = stat.getDistinctCount();
-			if (numThresholds > getMaxBinThreshold()) {
-				numThresholds = getMaxBinThreshold();
+			if (numThresholds > maxBinThreshold) {
+				numThresholds = maxBinThreshold;
 			}
 			
 			discretization.discretizeAttribute(attribute, numThresholds);
@@ -177,10 +174,9 @@ public class DiscretizationTest {
 			assertEquals(attribute.getAttributeName(), Attribute.NOMINAL, attribute.getAttributeType());
 		}
 		
-		getOutputFile().delete();	// delete old file
 		
 		// save discretized
-		FileController.getInstance().saveInstanceSet(getOutputFile(), dataSet, allAttributeIndexes, false);
+		FileController.getInstance().saveInstanceSet(outputFile, dataSet, allAttributeIndexes, false);
 		
 	}
 	
@@ -317,8 +313,8 @@ public class DiscretizationTest {
 				
 				// do not use frequency larger than distinct values
 				int numThresholds = stat.getDistinctCount();
-				if (numThresholds > getMaxBinThreshold()) {
-					numThresholds = getMaxBinThreshold();
+				if (numThresholds > maxBinThreshold) {
+					numThresholds = maxBinThreshold;
 				}
 				
 				sampler.discretizeAttribute(attribute, numThresholds);
@@ -340,60 +336,5 @@ public class DiscretizationTest {
 		
 	}
 
-	/**
-	 * @return the discretizationFactory
-	 */
-	public IDiscretizationFactory getDiscretizationFactory() {
-		return discretizationFactory;
-	}
-
-	/**
-	 * @param discretizationFactory the discretizationFactory to set
-	 */
-	public void setDiscretizationFactory(IDiscretizationFactory discretizationFactory) {
-		this.discretizationFactory = discretizationFactory;
-	}
-
-	/**
-	 * @return the inputFile
-	 */
-	public File getInputFile() {
-		return inputFile;
-	}
-
-	/**
-	 * @param inputFile the inputFile to set
-	 */
-	public void setInputFile(File inputFile) {
-		this.inputFile = inputFile;
-	}
-
-	/**
-	 * @return the outputFile
-	 */
-	public File getOutputFile() {
-		return outputFile;
-	}
-
-	/**
-	 * @param outputFile the outputFile to set
-	 */
-	public void setOutputFile(File outputFile) {
-		this.outputFile = outputFile;
-	}
-
-	/**
-	 * @return the maxBinThreshold
-	 */
-	public int getMaxBinThreshold() {
-		return maxBinThreshold;
-	}
-
-	/**
-	 * @param maxBinThreshold the maxBinThreshold to set
-	 */
-	public void setMaxBinThreshold(int maxBinThreshold) {
-		this.maxBinThreshold = maxBinThreshold;
-	}
 
 }
