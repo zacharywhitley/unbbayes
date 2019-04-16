@@ -14,6 +14,7 @@ import java.util.List;
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.learning.ConstructionController;
 
 /**
  * 
@@ -34,6 +35,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	private NumberFormat numberFormatter = null;
 	private String binSplitter = "_to_";
 	private String binPrefix = "_";
+	private String missingValueToken = ConstructionController.DEFAULT_MISSING_VALUE_TOKEN;
 
 	/**
 	 * @param inst
@@ -87,23 +89,26 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		
 		// extract values from old attribute
 		float[] sortedValues = new float[dataSet.numInstances()];
+		// also make a backup of original values, because we need to keep ordering when re-adding new discretized data
+		float[] originalValuesBkp = new float[dataSet.numInstances()];
       	Enumeration enumInst = dataSet.enumerateInstances();
       	for (int i = 0; enumInst.hasMoreElements(); i++) {
       		Instance instance = (Instance)enumInst.nextElement();
-      		sortedValues[i] = instance.getValue(att);
+      		originalValuesBkp[i] = instance.getValue(att);
+      		// check that it's non-negative
+    		if (originalValuesBkp[i]  < 0) {
+    			throw new IllegalArgumentException("This discretization method assumes non-negative numbers, but found " + originalValuesBkp[i] + " at entry " + i);
+    		}
+      		sortedValues[i] = originalValuesBkp[i];
+      		if (Float.isNaN(sortedValues[i])) {
+      			// temporary substitute with negative value, so that it comes in the beggining of sorted data
+      			sortedValues[i] = Float.NEGATIVE_INFINITY;
+      		}
 		}
       	
-		// backup original values, because we need to keep ordering when re-adding new discretized data
-		float[] originalValuesBkp = new float[dataSet.numInstances()];
-		System.arraycopy( sortedValues, 0, originalValuesBkp, 0, sortedValues.length );
 		
 		// sort values in ascending order and also get array of sum of equal distinct values
 		Arrays.sort(sortedValues);
-		
-		// check that it's non-negative
-		if (sortedValues[0] < 0) {
-			throw new IllegalArgumentException("This discretization method assumes non-negative numbers, but found " + sortedValues[0]);
-		}
 		
 		// get indexes that start distinct values in the sorted data
 		List<Integer> distinctValuesStartIndex = new ArrayList<Integer>(sortedValues.length);
@@ -136,8 +141,31 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 								+ ". This is probably a bug.");
 		}
 		
-		// if 1st distinct value is zero, then we have zeros in the data
-		boolean hasZero = sortedValues[distinctValuesStartIndex.get(0)] == 0f;
+		// if 1st distinct value is negative infinite, then we have negative infinite in the data
+		int missingValueStartIndex = -1;
+		for (int distinctIndex = 0; distinctIndex < distinctValuesStartIndex.size(); distinctIndex++) {
+			if (sortedValues[distinctValuesStartIndex.get(distinctIndex)] == Float.NEGATIVE_INFINITY) {
+				missingValueStartIndex = distinctIndex;
+				break;
+			} else if (sortedValues[distinctValuesStartIndex.get(distinctIndex)] > 0f) {
+				// data does not contain the value
+				break;
+			}
+		}
+		boolean hasMissingValue = (missingValueStartIndex >= 0);
+		
+		// check if data has zeros
+		int zeroStartIndex = -1;
+		for (int distinctIndex = missingValueStartIndex + 1; distinctIndex < distinctValuesStartIndex.size(); distinctIndex++) {
+			if (sortedValues[distinctValuesStartIndex.get(distinctIndex)] == 0f) {
+				zeroStartIndex = distinctIndex;
+				break;
+			} else if (sortedValues[distinctValuesStartIndex.get(distinctIndex)] > 0f) {
+				// we got a value larger than 0 in a sorted list before finding zero. So, data has no zeros
+				break;
+			}
+		}
+		boolean hasZero = zeroStartIndex >= 0;
 		
 		// 1st bin is reserved for the zero, so we need this much thresholds (bins) for other values
 //		int numThresholdWithout0 = numThresholds;
@@ -145,23 +173,33 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 //			numThresholdWithout0 -= 1;
 //		}
 		
-		// count how many non-zero values we have
-		int numNonZeroValues = sortedValues.length;
-		if (hasZero) {
-			numNonZeroValues -= distinctValuesCount.get(0);	// 1st index contain counts of zeros
+		// count how many non-zero and non-negative-infinite values we have
+		int numOrdinaryValues = sortedValues.length;
+		if (missingValueStartIndex >= 0) {
+			numOrdinaryValues -= distinctValuesCount.get(missingValueStartIndex);	// this index contain counts of missing values
+		}
+		if (zeroStartIndex >= 0) {
+			numOrdinaryValues -= distinctValuesCount.get(zeroStartIndex);	// this index contain counts of zeros
 		}
 		
 		// each non-zero bin should contain this number of elements
-		int expectedCountsPerBin = (int)((float)numNonZeroValues / (numThresholds - 1f));	// -1 in order to count for the 0 bin
+		// -1 in order to count for the 0 bin (always present).
+		// - ((missingValueStartIndex >= 0)?1:0) to count for missing values' bin if present
+		int expectedCountsPerBin = (int)((float)numOrdinaryValues / (numThresholds - 1f - (hasMissingValue?1:0) ) );	
         
 		// list of inclusive breakpoint. E.g. if interval is X1toX2, then it will contain index to X2.
 		List<Integer> breakpointIndices = new ArrayList<Integer>(numThresholds);
-		if (hasZero) {
-			// add zero as 1st breakpoint by default
-			breakpointIndices.add(distinctValuesStartIndex.get(0));
+		if (hasMissingValue) {
+			// add missing value as breakpoint by default
+			breakpointIndices.add(distinctValuesStartIndex.get(missingValueStartIndex));
 		}
-		// iterate on other (non-zero) values in order to determine other breakpoints
-		for (int i = (hasZero?1:0), cumulativeCount = 0; i < distinctValuesStartIndex.size(); i++) {
+		if (hasZero) {
+			// add zero as breakpoint by default
+			breakpointIndices.add(distinctValuesStartIndex.get(zeroStartIndex));
+		}
+		// iterate on other (non-zero) values in order to determine other breakpoints.
+		// non-zero ordinary values start right after the index of zero values
+		for (int i = (hasZero?1:0) + (hasMissingValue?1:0) , cumulativeCount = 0; i < distinctValuesStartIndex.size(); i++) {
 			// these lists are synchronized by index
 			cumulativeCount += distinctValuesCount.get(i);
 			if ( ( cumulativeCount >= expectedCountsPerBin )
@@ -171,7 +209,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 				breakpointIndices.add(distinctValuesStartIndex.get(i));
 				cumulativeCount = 0;	// reset counts
 			}
-			if (breakpointIndices.size() == (numThresholds - (hasZero?0:1))) {
+			if (breakpointIndices.size() == (numThresholds - (hasZero?0:1) - (hasMissingValue?0:1))) {
 				// reached desired number of threshold.
 				// Include rest of data to last bin
 				breakpointIndices.set(breakpointIndices.size() -1, 
@@ -191,12 +229,17 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		NumberFormat formatter = getNumberFormatter();
 		
 		// add discrete states based on breakpoints
-		// handle zero as a special bin
+		// handle missing value as a special bin
+		if (hasMissingValue) {
+			newAttribute.addValue(getMissingValueToken());
+		}
+		// handle zero as a special bin and bin to start frequency discretization
 		float previousBinNumber = 0f;
 		newAttribute.addValue(getBinPrefix() + formatter.format(previousBinNumber));
 		// build labels of discrete bins
 		// breakpoint[0], breakpoint[0]-to-breakpoint[1], breakpoint[1]-to-breakpoint[2], ...
-		for (int i = (hasZero?1:0); i < breakpointIndices.size(); i++) {
+		// start from breakpoint of ordinary values (i.e. after missing value and zero)
+		for (int i = (hasMissingValue?1:0) + (hasZero?1:0); i < breakpointIndices.size(); i++) {
 			// extract value referred by the breakpoint
 			float currentBinNumber = sortedValues[breakpointIndices.get(i)];
 			// this bin starts from previous number and goes until current number (inclusive)
@@ -215,18 +258,31 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 			// original value to be substituted with discretized value
 			float originaValue = originalValuesBkp[dataIndex];
 			
-			// find first breakpoint that includes the original value
-			for (int breakIndex = 0; breakIndex < breakpointIndices.size(); breakIndex++) {
-				// breakpoints are sorted in ascending order, 
-				// so 1st breakpoint larger than or equal to original value is the bin we want
-				if ( sortedValues[breakpointIndices.get(breakIndex)] >= originaValue ) {	
-					// if there is no zero values in data, breakIndex will be pointing only to non-zero bins
-					// so we need to add 1 to index considering that index 0 represents zeros in the attribute
-					dataSet.getInstance(dataIndex).setValue( attributePosition, (breakIndex + (hasZero?0:1)) );
-					break;
+			if (Float.isNaN(originaValue)) {
+				// this is a missing value
+				if (!hasMissingValue) {
+					// inconsistency
+					throw new RuntimeException("Found missing value in data which was not detected previously during discretization process. This can be caused in multithreading.");
 				}
-			}
-		}
+				// missing value is supposedly the 1st bin
+				dataSet.getInstance(dataIndex).setValue( attributePosition, breakpointIndices.get(0) );
+			} else {
+				// find first breakpoint that includes the original value
+				// missing value should not be compared, so ignore from comparison (by starting from index 1 if missing values are present)
+				for (int breakIndex = (hasMissingValue?1:0); breakIndex < breakpointIndices.size(); breakIndex++) {
+					// breakpoints are sorted in ascending order, 
+					// so 1st breakpoint larger than or equal to original value is the bin we want
+					if ( sortedValues[breakpointIndices.get(breakIndex)] >= originaValue ) {	
+						// if there is no zero values in data, breakIndex will be pointing only to non-zero bins
+						// so we need to add 1 to index considering that index 0 is always present and represents zeros in the attribute
+						dataSet.getInstance(dataIndex).setValue( attributePosition, (breakIndex + (hasZero?0:1)) );
+						break;
+					}
+				}
+				
+			}	// end of else (i.e. not a missing value)
+			
+		}	// end of for each data entry
 		
 	}
 
@@ -304,6 +360,23 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	 */
 	public String getName() {
 		return "Frequency (single bin for zeros)";
+	}
+
+	/**
+	 * @return symbol to be used to represent a missing value in the data. 
+	 * @see ConstructionController#DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public String getMissingValueToken() {
+		return missingValueToken;
+	}
+
+	/**
+	 * @param missingValueToken :
+	 * symbol to be used to represent a missing value in the data. 
+	 * @see ConstructionController#DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public void setMissingValueToken(String missingValueToken) {
+		this.missingValueToken = missingValueToken;
 	}
 
 

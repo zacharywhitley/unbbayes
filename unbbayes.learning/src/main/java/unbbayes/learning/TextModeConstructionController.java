@@ -30,6 +30,9 @@ public class TextModeConstructionController {
 	private int[][] matrix;
 	private long caseNumber;
 	private boolean compacted = false;
+	
+
+	private String missingValueToken = ConstructionController.DEFAULT_MISSING_VALUE_TOKEN;
 
 	public TextModeConstructionController(File file, ProbabilisticNetwork net) throws IOException {
 		InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
@@ -226,7 +229,7 @@ public class TextModeConstructionController {
 					if (cols.sval != null) {
 						stateName = cols.sval;
 						if (!isAState(node, stateName)) {
-							if (!stateName.equals("?")) {
+							if (!stateName.equals(missingValueToken)) {
 								node.adicionaEstado(stateName);
 								missing = false;
 							} else {
@@ -319,5 +322,22 @@ public class TextModeConstructionController {
 	public ArrayList<LearningNode> getVariablesVector() {
 		// TODO use interface java.util.List instead
 		return variablesVector;
+	}
+	
+	/**
+	 * @return token to be used to represent a missing value.
+	 * @see #DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public String getMissingValueToken() {
+		return missingValueToken;
+	}
+
+	/**
+	 * @param missingValueToken :
+	 * token to be used to represent a missing value.
+	 * @see #DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public void setMissingValueToken(String missingValueToken) {
+		this.missingValueToken = missingValueToken;
 	}
 }

@@ -42,6 +42,8 @@ public class TxtLoader extends Loader {
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
+	private String missingValueToken = "?";
+
 	/**
 	 * Reads a TXT file from a reader.
 	 * @param file
@@ -321,11 +323,14 @@ public class TxtLoader extends Loader {
 					instance[attIndex] = attribute.addValue(numValue);
 				}
 			} else {
-				/*
-				 * The attribute is not nominal thus only numbers are allowed
-				 * here.
-				 */
-				float numValue = (float) Double.parseDouble(tokenizer.sval);
+				float numValue = Float.NaN;
+				if (!tokenizer.sval.equals(missingValueToken)) {
+					/*
+					 * The attribute is not nominal thus only numbers are allowed
+					 * here.
+					 */
+					numValue = (float) Double.parseDouble(tokenizer.sval);
+				}	// else missing value. Use NaN
 				instance[attIndex] = numValue;
 			}
 			++attIndex;
@@ -366,6 +371,20 @@ public class TxtLoader extends Loader {
 		if (tokenizer.ttype == StreamTokenizer.TT_EOF)  {
 			errms(resource.getString("getNextTokenException2"));
 		}
+	}
+
+	/**
+	 * @return the missingValueToken
+	 */
+	public String getMissingValueToken() {
+		return missingValueToken;
+	}
+
+	/**
+	 * @param missingValueToken the missingValueToken to set
+	 */
+	public void setMissingValueToken(String missingValueToken) {
+		this.missingValueToken = missingValueToken;
 	}
 
 }

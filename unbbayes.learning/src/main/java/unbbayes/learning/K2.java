@@ -57,7 +57,7 @@ public class K2 extends K2Toolkit{
         try{
         	setMetric(metric);
 //            try {
-            	variation = Math.pow(10,Integer.parseInt(param));                                     	        
+            	variation = Math.pow(10,Float.parseFloat(param));                                     	        
 //            } catch (NumberFormatException e) {
 //            	e.printStackTrace();
 //            	variation = 0.05;

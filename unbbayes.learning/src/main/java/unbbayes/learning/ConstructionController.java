@@ -74,6 +74,10 @@ public class ConstructionController {
 	private int[][] matrix;
 	private long caseNumber;
 	private boolean compacted;
+	
+	/** Default symbol to be used to represent a missing value in the data. */
+	public static final String DEFAULT_MISSING_VALUE_TOKEN = "?";
+	private String missingValueToken = DEFAULT_MISSING_VALUE_TOKEN;
 
 	/**
 	 * Starts the process of read the file, construct and fill the structres
@@ -533,7 +537,7 @@ public class ConstructionController {
 						if (cols.sval != null) {
 							stateName = cols.sval;
 							if (!aux.existeEstado(stateName)) {
-								if (!stateName.equals("?")) {
+								if (!stateName.equals(missingValueToken)) {
 									aux.adicionaEstado(stateName);
 									missing = false;
 								} else {
@@ -629,5 +633,22 @@ public class ConstructionController {
 	public ArrayList<Node> getVariablesVector() {
 		// TODO use interface java.util.List instead
 		return variablesVector;
+	}
+
+	/**
+	 * @return token to be used to represent a missing value.
+	 * @see #DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public String getMissingValueToken() {
+		return missingValueToken;
+	}
+
+	/**
+	 * @param missingValueToken :
+	 * token to be used to represent a missing value.
+	 * @see #DEFAULT_MISSING_VALUE_TOKEN
+	 */
+	public void setMissingValueToken(String missingValueToken) {
+		this.missingValueToken = missingValueToken;
 	}
 }

@@ -9,7 +9,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -188,6 +190,19 @@ public class DiscretizationTest {
 	@Test
 	public final void testFrequencyDiscretizationWithZero2() throws Exception {
 		
+		// nominal attributes are: Division	Age	Gender checklink	privacysetting	checkhttps	clickwocheck	phishbefore	phishinlast	loseinfo	dlmalware
+		Set<String> nominalAttributes = new HashSet<String>();
+		nominalAttributes.add("Division");
+		nominalAttributes.add("Age");
+		nominalAttributes.add("Gender");
+		nominalAttributes.add("checklink");
+		nominalAttributes.add("privacysetting");
+		nominalAttributes.add("checkhttps");
+		nominalAttributes.add("clickwocheck");
+		nominalAttributes.add("phishbefore");
+		nominalAttributes.add("phishinlast");
+		nominalAttributes.add("loseinfo");
+		nominalAttributes.add("dlmalware");
 		
 		int expectedNumData = 3582;
 		int expectedNumAttributes = 55;
@@ -198,7 +213,7 @@ public class DiscretizationTest {
 		IDiscretizationFactory discretizationFactory = new FrequencyDiscretizationWithZeroFactory();
 		
 		// file to output
-		File outputFile = new File("discretizedRange_" + System.currentTimeMillis() + ".txt");
+		File outputFile = new File("discretizedRange2_" + System.currentTimeMillis() + ".txt");
 		outputFile.delete();	// delete old file
 		
 		// input file
@@ -234,6 +249,13 @@ public class DiscretizationTest {
 			Attribute attribute = dataSet.getAttribute(attributeIndex);
 			attributeNames[attributeIndex] = attribute.getAttributeName();
 			
+			if (nominalAttributes.contains(attributeNames[attributeIndex])) {
+				// force this attribute to be considered as nominal
+				attributeType[attributeIndex] = Attribute.NOMINAL;
+				attributeIsString[attributeIndex] = true;
+				continue;
+			}
+			
 			// check if data of current attribute are numeric
 			boolean isNumeric = true;
 			for (String value : attribute.getDistinticNominalValues()) {
@@ -251,7 +273,7 @@ public class DiscretizationTest {
 			
 		}
 		
-		assertEquals("id", attributeNames[0]);
+		assertEquals("uid", attributeNames[0]);
 		
 		// will reload everything
 		loader = new TxtLoader(file, -1);
@@ -284,13 +306,17 @@ public class DiscretizationTest {
 		// check number of columns
 		assertEquals(expectedNumAttributes, dataSet.getAttributes().length);
 		// check that 1st column is id
-		assertEquals("id", dataSet.getAttribute(0).getAttributeName());
+		assertEquals("uid", dataSet.getAttribute(0).getAttributeName());
 //		assertEquals(Attribute.NOMINAL, dataSet.getAttribute(0).getAttributeType());
 		
 		
 		// check that other columns are numeric
 		for (int i = 1; i < dataSet.getAttributes().length; i++) {
-			assertEquals(dataSet.getAttribute(i).getAttributeName(), Attribute.NUMERIC, dataSet.getAttribute(i).getAttributeType());
+			if (attributeType[i] == 0) {
+				assertEquals(dataSet.getAttribute(i).getAttributeName(), Attribute.NUMERIC, dataSet.getAttribute(i).getAttributeType());
+			} else {
+				assertEquals(dataSet.getAttribute(i).getAttributeName(), Attribute.NOMINAL, dataSet.getAttribute(i).getAttributeType());
+			}
 		}
 		
 		
@@ -510,7 +536,7 @@ public class DiscretizationTest {
 			assertTrue(file.getName().endsWith(".txt"));
 			
 			// append suffix to output file name
-			String outFileName = file.getName().replace(".txt", "_triangular.txt");
+			String outFileName = file.getName().replace(".txt", "_triangular_2.txt");
 			File outputFile = new File(outFileName);
 			outputFile.delete();
 			

@@ -98,10 +98,12 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
         		
         		int evidenceState = getEvidenceState(record, node);
         		if (evidenceState < 0) {
-        	        csvParser.close();
-        			throw new RuntimeException("In line " + record.getRecordNumber() 
-        					+ ", could not find state " + record.get(evidenceNodeName) 
-        					+ " of node " + evidenceNodeName);
+//        	        csvParser.close();
+//        			throw new RuntimeException("In line " + record.getRecordNumber() 
+//        					+ ", could not find state " + record.get(evidenceNodeName) 
+//        					+ " of node " + evidenceNodeName);
+        			// do not sample current node
+        			continue;
         		}
         		
         		// insert the evidence
@@ -138,16 +140,19 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 	/**
 	 * Will check for state indicated by record.
 	 * If no exact mach is found, then it will 
-	 * parse the state name as interval and
-	 * as
+	 * parse the state name as interval 
 	 * @param record
 	 * @param node
-	 * @return
+	 * @return -1 if nothing was found or "?" was found
 	 */
 	protected int getEvidenceState(CSVRecord record, Node node) {
 		
 		// header of record is supposedly equal to name of node
 		String valueInRecord = record.get(node.getName());
+		if (valueInRecord != null && valueInRecord.equals("?")) {
+			return -1; // this must be sampled
+		}
+		
 		
 		float recordAsNumber = Float.NaN;
 		try {
@@ -158,7 +163,8 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 		}
 		
 		if (!Float.isNaN(recordAsNumber) && recordAsNumber < 0) {
-			return -1;
+//			return -1;
+			throw new RuntimeException("Negative values are not supported yet. Found " + valueInRecord + " in column " + record.getRecordNumber());
 		}
 		
 		// search for state that matches with value in record
@@ -220,7 +226,8 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 			return largestState;
 		}
 		
-		return -1;
+		throw new RuntimeException("State not found: " + valueInRecord + " in column " + record.getRecordNumber());
+//		return -1;
 	}
 
 	/* (non-Javadoc)

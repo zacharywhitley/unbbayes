@@ -3,25 +3,20 @@
  */
 package unbbayes.simulation.montecarlo.sampling;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -216,7 +211,139 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 	 * @throws InterruptedException 
 	 */
 	@Test
-	public final void testStartWithFileEvidence2() throws IOException, InterruptedException, URISyntaxException {
+	public final void testStartWithFileEvidence2Greedy() throws IOException, InterruptedException, URISyntaxException {
+		
+		// number of outputs to generate
+		int numResults = 10;
+		
+		// files to read
+		URL netURL = getClass().getResource("./learnedDBNFreq50_2_K2[-1.5].net");
+		assertNotNull(netURL);
+		URL evidenceURL = getClass().getResource("./testEvidence2.txt");
+		assertNotNull(evidenceURL);
+		
+		
+		// load net
+		final ProbabilisticNetwork net = (ProbabilisticNetwork) 
+				new CountCompatibleNetIO().load(new File(netURL.toURI()));
+		assertNotNull(net);
+		assertNotNull(net.getNodes());
+		assertEquals(54, net.getNodes().size());	// 55 vars minus the uid
+		
+		// the sampler to test
+		final IterativeSecondOrderJunctionTreeSampler sampler = new IterativeSecondOrderJunctionTreeSampler();
+		assertNotNull(sampler.getAlgorithm());
+		sampler.getAlgorithm().setNet(net);
+		
+		// generate multiple results
+		for (int iteration = 0; iteration < numResults; iteration++) {
+			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_Greedy_" + iteration + ".txt");
+			outFile.delete();
+			
+			// read evidence file;
+			CSVMultiEvidenceIO evidenceIO = new CSVMultiEvidenceIO();
+			evidenceIO.loadEvidences(new File(evidenceURL.toURI()), net);
+			List<Map<String, Integer>> allEvidences = evidenceIO.getLastEvidencesRead();
+			assertNotNull(allEvidences);
+			
+			// iterate on evidences in order to generate sample for each evidence
+			byte[][] samplesToSave = new byte[allEvidences.size()][net.getNodeCount()];
+			for (int evidenceIndex = 0; evidenceIndex < samplesToSave.length; evidenceIndex++) {
+				Map<String, Integer> evidences  = allEvidences.get(evidenceIndex);
+				// each record is a data entry
+				// Accessing Values by name of the node
+				Map<String, Integer> evidenceBackup = new HashMap<String,Integer>();
+				for (String evidenceNodeName : evidences.keySet()) {
+					
+					// check consistency
+					Node node = net.getNode(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, node);
+					
+					// extract the state of the evidence
+					Integer evidenceState = evidences.get(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, evidenceState);
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, evidenceState >= 0);
+					
+					// insert the evidence
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, node instanceof ProbabilisticNode);
+					((ProbabilisticNode)node).initMarginalList();
+					((ProbabilisticNode)node).addFinding(evidenceState);
+					evidenceBackup.put(node.getName(), evidenceState);
+					
+					// make sure evidence was inserted
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, ((ProbabilisticNode)node).hasEvidence());
+					assertEquals(evidenceNodeName + ", row " + evidenceIndex, evidenceState.intValue(), ((ProbabilisticNode)node).getEvidence());
+					
+				}
+				
+				// sample 1 row with current evidence
+				sampler.start(net, 1);
+				
+				// extract the generated single sample
+				byte[][] singleSample = sampler.getSampledStatesMatrix();
+				assertNotNull("row = " + evidenceIndex, singleSample);
+				assertEquals("row = " + evidenceIndex, 1, singleSample.length);
+				assertEquals("row = " + evidenceIndex, net.getNodeCount(), singleSample[0].length);
+				
+				// store the current sample
+				for (int nodeIndex = 0; nodeIndex < singleSample[0].length; nodeIndex++) {
+					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
+				}
+				
+				// make sure marginals add up to 1
+				for (Node node : net.getNodes()) {
+					if (!(node instanceof ProbabilisticNode)) {
+						continue;
+					}
+					
+					float sum = 0;
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						sum += ((ProbabilisticNode)node).getMarginalAt(i);
+					}
+					
+					assertEquals(node.toString(), 1f, sum, 0.005);
+					
+				}
+				
+				// make sure all evidence nodes have evidences;
+				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
+					
+					Node evidenceNode = net.getNode(entry.getKey());
+					
+					assertTrue(evidenceNode.toString(), evidenceNode instanceof ProbabilisticNode);
+					assertTrue(((ProbabilisticNode)evidenceNode).hasEvidence());
+					assertEquals(evidenceNode.toString(), entry.getValue().intValue(), ((ProbabilisticNode)evidenceNode).getEvidence());
+				}
+				
+				
+				// don't use same evidence in next iteration
+				sampler.getAlgorithm().resetEvidences(net);
+				
+			}	// end of loop for CSV
+			
+			
+			// store all generated samples
+			MonteCarloIO io = new MonteCarloIO(samplesToSave);
+			io.setFile(outFile);
+			io.makeFile(sampler.getSamplingNodeOrderQueue());
+			assertTrue(outFile.exists());
+			
+		}	// end of iteration for each output file
+		
+		
+	}
+	
+	
+	
+	/**
+	 * Test method for {@link unbbayes.simulation.montecarlo.sampling.IterativeSecondOrderJunctionTreeSampler#start(unbbayes.prs.bn.ProbabilisticNetwork, int)}.
+	 * Only one sample will be generated for each evidence read from a file.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public final void testStartWithFileEvidenceRange() throws IOException, InterruptedException, URISyntaxException {
 		
 		// files to read
 		URL netURL = getClass().getResource("./learnedNetWithExtraArcsDataRange50.net");
