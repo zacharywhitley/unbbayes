@@ -48,7 +48,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	 * (non-Javadoc)
 	 * @see unbbayes.datamining.discretize.FrequencyDiscretization#discretizeAttribute(unbbayes.datamining.datamanipulation.Attribute, int)
 	 */
-	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception {	
+	public void transformAttribute(Attribute att,int numThresholds) throws Exception {	
 
 		// nothing to do if no attribute was specified
 		if (att == null) {
@@ -57,7 +57,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		
 		// do not consider the case in which number of bins is 1 or less (because we need at least a bin for 0, and another bin for the rest	)
 		if (numThresholds <= 1) {
-			super.discretizeAttribute(att, numThresholds);
+			super.transformAttribute(att, numThresholds);
 		}
 		
 		// this is the data set
@@ -287,7 +287,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	}
 
 	/**
-	 * @return formatter used in {@link #discretizeAttribute(Attribute, int)}
+	 * @return formatter used in {@link #transformAttribute(Attribute, int)}
 	 * in order to generate a label of the discrete bin in a format X1toX2.
 	 * In this case, the formatter will be applied to X1 and X2.
 	 */
@@ -304,7 +304,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 
 	/**
 	 * @param numberFormatter 
-	 * formatter used in {@link #discretizeAttribute(Attribute, int)}
+	 * formatter used in {@link #transformAttribute(Attribute, int)}
 	 * in order to generate a label of the discrete bin in a format X1toX2.
 	 * In this case, the formatter will be applied to X1 and X2.
 	 */

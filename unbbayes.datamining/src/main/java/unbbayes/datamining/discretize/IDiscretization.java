@@ -42,7 +42,7 @@ public interface IDiscretization {
 	 * @param numThresholds : number of bins
 	 * @throws Exception
 	 */
-	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception;
+	public void transformAttribute(Attribute att,int numThresholds) throws Exception;
 	
 	/**
 	 * @return

@@ -480,7 +480,7 @@ public class PreprocessPanel extends JPanel
 			sampler.getStateIntervalParser().setSplitter(samplingPanel.getSplitterTextField().getText());
 			
 			// running discretization will "undo" discretization
-			sampler.discretizeAttribute( attribute, -1 );
+			sampler.transformAttribute( attribute, -1 );
 			reference.updateInstances( sampler.getInstances() );
 			reference.setStatusBar( sampler.getName() + ": success" );
 		} catch (Exception e) {

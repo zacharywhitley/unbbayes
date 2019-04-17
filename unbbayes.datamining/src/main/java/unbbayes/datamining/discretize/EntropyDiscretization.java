@@ -33,10 +33,10 @@ public class EntropyDiscretization implements IDiscretization
 	}
 
 	public void discretizeAttribute(Attribute att)
-	{	discretizeAttribute(att,10);
+	{	transformAttribute(att,10);
 	}
 
-	public void discretizeAttribute(Attribute att,int numThresholds)
+	public void transformAttribute(Attribute att,int numThresholds)
 	{	if (!att.isNumeric())//garante que o atributo seja numerico
 		{	throw new IllegalArgumentException("Attribute not numeric");
 		}
@@ -113,7 +113,7 @@ public class EntropyDiscretization implements IDiscretization
 		for (int i=0; i<numAttributes; i++)
 		{	Attribute att = inst.getAttribute(i);
 			if (att.isNumeric())
-			{	discretizeAttribute(att,numThresholds);
+			{	transformAttribute(att,numThresholds);
 			}
 		}
 	}

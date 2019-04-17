@@ -39,10 +39,10 @@ public class RangeDiscretization implements IDiscretization
 	}
 
 	public void discretizeAttribute(Attribute att) throws Exception
-	{	discretizeAttribute(att,10);
+	{	transformAttribute(att,10);
 	}
 
-	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception
+	public void transformAttribute(Attribute att,int numThresholds) throws Exception
 	{	if (!att.isNumeric())//garante que o atributo seja num�rico
 		{	throw new IllegalArgumentException("Attribute not numeric");
 		}
@@ -105,7 +105,7 @@ public class RangeDiscretization implements IDiscretization
 		for (int i=0; i<numAttributes; i++)
 		{	Attribute att = inst.getAttribute(i);
 			if (att.isNumeric())
-			{	discretizeAttribute(att,numThresholds);
+			{	transformAttribute(att,numThresholds);
 			}
 		}
 	}

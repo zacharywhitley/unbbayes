@@ -1,10 +1,8 @@
 package unbbayes.datamining.discretize.sample;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -49,7 +47,7 @@ public class UniformDistributionSampler implements ISampler {
 	/* (non-Javadoc)
 	 * @see unbbayes.datamining.discretize.IDiscretization#discretizeAttribute(unbbayes.datamining.datamanipulation.Attribute, int)
 	 */
-	public void discretizeAttribute(Attribute originalAttribute, int numThresholds) throws Exception {
+	public void transformAttribute(Attribute originalAttribute, int numThresholds) throws Exception {
 		
 		// nothing to do if no attribute was specified
 		if (originalAttribute == null) {

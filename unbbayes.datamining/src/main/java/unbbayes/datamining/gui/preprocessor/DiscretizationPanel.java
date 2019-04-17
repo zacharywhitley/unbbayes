@@ -57,7 +57,7 @@ public class DiscretizationPanel
 		  try {
 			  DiscretizationWrapper wrapper = (DiscretizationWrapper) discretizationTypeComboBox.getSelectedItem();
 			  IDiscretization selectedDiscretization = wrapper.getWrapped();
-			  selectedDiscretization.discretizeAttribute( selectedAttribute, (numberStatesComboBox.getSelectedIndex() + 1 ) );
+			  selectedDiscretization.transformAttribute( selectedAttribute, (numberStatesComboBox.getSelectedIndex() + 1 ) );
 			  reference.updateInstances( selectedDiscretization.getInstances() );
               reference.setStatusBar( selectedDiscretization.getName() + ": success" );
 		  } catch (Exception e) {
