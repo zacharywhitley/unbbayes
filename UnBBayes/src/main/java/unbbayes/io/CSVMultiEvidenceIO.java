@@ -377,19 +377,31 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 		// printer of output file
 		PrintStream out = new PrintStream(new FileOutputStream(output));
 		
+		if (inputRight == null) {
+			inputRight = inputLeft;
+			inputLeft = null;
+		}
+		
 		// read evidence files;
-		CSVParser csvParserLeft = new CSVParser(new BufferedReader(new FileReader(inputLeft)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		CSVParser csvParserLeft = null;
+		if (inputLeft != null) {
+			csvParserLeft = new CSVParser(new BufferedReader(new FileReader(inputLeft)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		}
 		CSVParser csvParserRight = new CSVParser(new BufferedReader(new FileReader(inputRight)), DEFAULT_EVIDENCE_FILE_FORMAT);
 		
 		// get headers
-		ArrayList<Entry<String, Integer>> headerLeft = new ArrayList<Entry<String, Integer>>(csvParserLeft.getHeaderMap().entrySet());
+		ArrayList<Entry<String, Integer>> headerLeft = null;
+		if (csvParserLeft != null) {
+			headerLeft = new ArrayList<Entry<String, Integer>>(csvParserLeft.getHeaderMap().entrySet());
+			// make sure headers are sorted by column number
+			Collections.sort(headerLeft, new Comparator<Entry<String, Integer>>() {
+				public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
+					return o1.getValue() - o2.getValue();
+				}
+			});
+		}
 		ArrayList<Entry<String, Integer>> headerRight = new ArrayList<Entry<String, Integer>>(csvParserRight.getHeaderMap().entrySet());
 		// make sure headers are sorted by column number
-		Collections.sort(headerLeft, new Comparator<Entry<String, Integer>>() {
-			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
-				return o1.getValue() - o2.getValue();
-			}
-		});
 		Collections.sort(headerRight, new Comparator<Entry<String, Integer>>() {
 			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
 				return o1.getValue() - o2.getValue();
@@ -397,8 +409,10 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 		});
 		
 		// write headers
-		for (Entry<String, Integer> entry : headerLeft) {
-			out.print(entry.getKey() + delimiter);
+		if (headerLeft != null) {
+			for (Entry<String, Integer> entry : headerLeft) {
+				out.print(entry.getKey() + delimiter);
+			}
 		}
 		// write headers of right file. Make sure last entry do not have delimiter
 		for (Iterator<Entry<String, Integer>> it = headerRight.iterator(); it.hasNext();) {
@@ -410,15 +424,23 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 		out.println();
 		
 		// iterate on both inputs
-		List<CSVRecord> recordsLeft = csvParserLeft.getRecords();
+		List<CSVRecord> recordsLeft = null;
+		if (headerLeft != null) {
+			recordsLeft = csvParserLeft.getRecords();
+		}
 		List<CSVRecord> recordsRight = csvParserRight.getRecords();
-		int numRecords = Math.min(recordsLeft.size(), recordsRight.size());
+		int numRecords = recordsRight.size();
+		if (recordsLeft != null) {
+			numRecords = Math.min(recordsLeft.size(), recordsRight.size());
+		}
 		for (int row = 0; row < numRecords; row++) {
 			
 			// write left
-			for (Iterator<String> itLeft = recordsLeft.get(row).iterator(); itLeft.hasNext(); ) {
-				String value = itLeft.next();
-				out.print(value + delimiter);
+			if (recordsLeft != null) {
+				for (Iterator<String> itLeft = recordsLeft.get(row).iterator(); itLeft.hasNext(); ) {
+					String value = itLeft.next();
+					out.print(value + delimiter);
+				}
 			}
 			
 			// write right
@@ -435,7 +457,9 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
         }	// end of loop for CSV}
         
 		csvParserRight.close();
-		csvParserLeft.close();
+		if (csvParserLeft != null) {
+			csvParserLeft.close();
+		}
 		
 		out.close();
 		
