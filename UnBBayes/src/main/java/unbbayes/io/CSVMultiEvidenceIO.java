@@ -2,10 +2,16 @@ package unbbayes.io;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,12 +55,20 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 	
 	public static final String[] SUPPORTED_EXTENSIONS = {"txt", "csv"};
 	
-	private CSVFormat csvFormat = CSVFormat.DEFAULT
+	/** Delimiter (tab) used in {@link #DEFAULT_EVIDENCE_FILE_FORMAT} and {@link #appendEvidenceDataByColumn(File, File, File)} */
+	public static final char DEFAULT_DELIMITER = '\t';
+	
+	/** Default csv format used to store evidence. It's a tab separated value file */
+	public static final CSVFormat DEFAULT_EVIDENCE_FILE_FORMAT = CSVFormat.DEFAULT
             .withFirstRecordAsHeader()
             .withIgnoreHeaderCase()
             .withTrim()
-            .withDelimiter('\t');
+            .withDelimiter(DEFAULT_DELIMITER);
 
+
+	
+	private CSVFormat csvFormat = DEFAULT_EVIDENCE_FILE_FORMAT;
+	
 	private List<Map<String, Integer>> lastEvidencesRead;
 
 	private Map<String, Map<String, Entry<Float, Float>>> stateIntervalCache = new HashMap<String, Map<String,Entry<Float,Float>>>();
@@ -335,5 +349,96 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 	public void setStateIntervalCache(Map<String, Map<String, Entry<Float, Float>>> stateIntervalCache) {
 		this.stateIntervalCache = stateIntervalCache;
 	}
+	
 
+	/**
+	 * Delegates to {@link #appendEvidenceDataByColumn(File, File, File, String)} 
+	 * with {@link #DEFAULT_DELIMITER} as delimiter
+	 * @throws IOException 
+	 * 
+	 */
+	public static void appendEvidenceDataByColumn(File inputLeft, File inputRight, File output) throws IOException {
+		appendEvidenceDataByColumn(inputLeft, inputRight, output, DEFAULT_DELIMITER);
+	}
+
+	
+	/**
+	 * Appends two evidence files supported by this class
+	 * by column
+	 * @param inputLeft: input to append to left columns
+	 * @param inputRight : input to append to right columns
+	 * @param output : appended file.
+	 * @param delimiter : character to use as delimiter in output.
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	public static void appendEvidenceDataByColumn(File inputLeft, File inputRight, File output, char delimiter) throws IOException {
+
+		// printer of output file
+		PrintStream out = new PrintStream(new FileOutputStream(output));
+		
+		// read evidence files;
+		CSVParser csvParserLeft = new CSVParser(new BufferedReader(new FileReader(inputLeft)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		CSVParser csvParserRight = new CSVParser(new BufferedReader(new FileReader(inputRight)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		
+		// get headers
+		ArrayList<Entry<String, Integer>> headerLeft = new ArrayList<Entry<String, Integer>>(csvParserLeft.getHeaderMap().entrySet());
+		ArrayList<Entry<String, Integer>> headerRight = new ArrayList<Entry<String, Integer>>(csvParserRight.getHeaderMap().entrySet());
+		// make sure headers are sorted by column number
+		Collections.sort(headerLeft, new Comparator<Entry<String, Integer>>() {
+			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
+				return o1.getValue() - o2.getValue();
+			}
+		});
+		Collections.sort(headerRight, new Comparator<Entry<String, Integer>>() {
+			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
+				return o1.getValue() - o2.getValue();
+			}
+		});
+		
+		// write headers
+		for (Entry<String, Integer> entry : headerLeft) {
+			out.print(entry.getKey() + delimiter);
+		}
+		// write headers of right file. Make sure last entry do not have delimiter
+		for (Iterator<Entry<String, Integer>> it = headerRight.iterator(); it.hasNext();) {
+			out.print(it.next().getKey());
+			if (it.hasNext()) {
+				out.print(delimiter);
+			}
+		}
+		out.println();
+		
+		// iterate on both inputs
+		List<CSVRecord> recordsLeft = csvParserLeft.getRecords();
+		List<CSVRecord> recordsRight = csvParserRight.getRecords();
+		int numRecords = Math.min(recordsLeft.size(), recordsRight.size());
+		for (int row = 0; row < numRecords; row++) {
+			
+			// write left
+			for (Iterator<String> itLeft = recordsLeft.get(row).iterator(); itLeft.hasNext(); ) {
+				String value = itLeft.next();
+				out.print(value + delimiter);
+			}
+			
+			// write right
+			for (Iterator<String> itRight = recordsRight.get(row).iterator(); itRight.hasNext(); ) {
+				String value = itRight.next();
+				out.print(value);
+				if (itRight.hasNext()) {
+					out.print(delimiter);
+				}
+			}
+			
+			out.println();
+        
+        }	// end of loop for CSV}
+        
+		csvParserRight.close();
+		csvParserLeft.close();
+		
+		out.close();
+		
+	}
+	
 }
