@@ -280,6 +280,7 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 						for (int dirichletListIndex = 0; dirichletListIndex < dirichletByParentState.size(); dirichletListIndex++) {
 							
 							// sample a conditional probability from respective dirichlet dist
+							// TODO check if unbbayes.util.DirichletSampler is faster
 							Dirichlet dirichlet = dirichletByParentState.get(dirichletListIndex);
 							double[] sampleConditionalProb = dirichlet.nextDistribution();
 							
@@ -434,7 +435,7 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 
 	/**
 	 * @return initial value of parameters of dirichlet distribution.
-	 * The actual parameters of dirichlet distribuion to be used in the sampling process 
+	 * The actual parameters of dirichlet distribution to be used in the sampling process 
 	 * (to sample a "first order" CPT which will be used by the superclass Junction tree algorithm)
 	 * will be this value plus the counts stored at {@link ProbabilisticNetwork#getProperty(String)}
 	 * with name {@link CountCompatibleNetIO#DEFAULT_COUNT_TABLE_PREFIX} + {@link Node#getName()}.
@@ -445,7 +446,7 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 
 	/**
 	 * @param initialVirtualCounts : initial value of parameters of dirichlet distribution.
-	 * The actual parameters of dirichlet distribuion to be used in the sampling process 
+	 * The actual parameters of dirichlet distribution to be used in the sampling process 
 	 * (to sample a "first order" CPT which will be used by the superclass Junction tree algorithm)
 	 * will be this value plus the counts stored at {@link ProbabilisticNetwork#getProperty(String)}
 	 * with name {@link CountCompatibleNetIO#DEFAULT_COUNT_TABLE_PREFIX} + {@link Node#getName()}.

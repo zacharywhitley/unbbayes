@@ -243,7 +243,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
 				nodeAddedList[i]= true;					
 				samplingNodeOrderQueue.add(pn.getNodeAt(i));
-				System.out.println(pn.getNodeAt(i));
+//				System.out.println(pn.getNodeAt(i));
 			}
 		}			
 	}

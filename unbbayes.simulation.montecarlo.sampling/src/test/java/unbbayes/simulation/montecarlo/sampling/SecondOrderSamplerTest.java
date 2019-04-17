@@ -27,15 +27,18 @@ import unbbayes.io.CountCompatibleNetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.montecarlo.io.MonteCarloIO;
 
 /**
+ * Test case for {@link IterativeSecondOrderJunctionTreeSampler}
+ * and {@link SecondOrderMonteCarloSampling}
  * @author Shou Matsumoto
  *
  */
-public class IterativeSecondOrderJunctionTreeSamplerTest {
+public class SecondOrderSamplerTest {
 
-	public IterativeSecondOrderJunctionTreeSamplerTest() {
+	public SecondOrderSamplerTest() {
 	}
 
 	/**
@@ -90,7 +93,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 	 * @throws InterruptedException 
 	 */
 	@Test
-	public final void testStartWithFileEvidence() throws IOException, InterruptedException, URISyntaxException {
+	public final void testJTStartWithFileEvidence() throws IOException, InterruptedException, URISyntaxException {
 		
 		// files to read
 		URL netURL = getClass().getResource("./learnedNetWithExtraArcsDataFreq50.net");
@@ -204,14 +207,15 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 	}
 	
 	/**
-	 * Test method for {@link unbbayes.simulation.montecarlo.sampling.IterativeSecondOrderJunctionTreeSampler#start(unbbayes.prs.bn.ProbabilisticNetwork, int)}.
+	 * Test method for {@link SecondOrderMonteCarloSampling#start(ProbabilisticNetwork, int, long)}.
 	 * Only one sample will be generated for each evidence read from a file.
 	 * @throws URISyntaxException 
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
+	@SuppressWarnings("deprecation")
 	@Test
-	public final void testStartWithFileEvidence2Greedy() throws IOException, InterruptedException, URISyntaxException {
+	public final void testMCStartWithFileEvidence2Greedy() throws IOException, InterruptedException, URISyntaxException {
 		
 		// number of outputs to generate
 		int numResults = 10;
@@ -231,9 +235,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 		assertEquals(54, net.getNodes().size());	// 55 vars minus the uid
 		
 		// the sampler to test
-		final IterativeSecondOrderJunctionTreeSampler sampler = new IterativeSecondOrderJunctionTreeSampler();
-		assertNotNull(sampler.getAlgorithm());
-		sampler.getAlgorithm().setNet(net);
+		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
 		
 		// generate multiple results
 		for (int iteration = 0; iteration < numResults; iteration++) {
@@ -277,7 +279,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 				}
 				
 				// sample 1 row with current evidence
-				sampler.start(net, 1);
+				sampler.start(net, 1, Long.MAX_VALUE);
 				
 				// extract the generated single sample
 				byte[][] singleSample = sampler.getSampledStatesMatrix();
@@ -290,20 +292,6 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
 				}
 				
-				// make sure marginals add up to 1
-				for (Node node : net.getNodes()) {
-					if (!(node instanceof ProbabilisticNode)) {
-						continue;
-					}
-					
-					float sum = 0;
-					for (int i = 0; i < node.getStatesSize(); i++) {
-						sum += ((ProbabilisticNode)node).getMarginalAt(i);
-					}
-					
-					assertEquals(node.toString(), 1f, sum, 0.005);
-					
-				}
 				
 				// make sure all evidence nodes have evidences;
 				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
@@ -317,7 +305,10 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 				
 				
 				// don't use same evidence in next iteration
-				sampler.getAlgorithm().resetEvidences(net);
+				net.resetEvidences();
+				for (Node node : net.getNodes()) {
+					assertTrue(node.toString(), !((TreeVariable)node).hasEvidence());
+				}
 				
 			}	// end of loop for CSV
 			
@@ -343,7 +334,7 @@ public class IterativeSecondOrderJunctionTreeSamplerTest {
 	 * @throws InterruptedException 
 	 */
 	@Test
-	public final void testStartWithFileEvidenceRange() throws IOException, InterruptedException, URISyntaxException {
+	public final void testJTStartWithFileEvidenceRange() throws IOException, InterruptedException, URISyntaxException {
 		
 		// files to read
 		URL netURL = getClass().getResource("./learnedNetWithExtraArcsDataRange50.net");

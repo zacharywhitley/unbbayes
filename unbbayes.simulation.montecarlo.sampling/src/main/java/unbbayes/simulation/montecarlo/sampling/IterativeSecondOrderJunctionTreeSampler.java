@@ -3,10 +3,8 @@ package unbbayes.simulation.montecarlo.sampling;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -21,7 +19,7 @@ import unbbayes.util.longtask.ILongTaskProgressObserver;
 import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 /**
- * This is a monte-carlo sampler
+ * This is a sampler
  * which support second order Bayes net 
  * (Bayes net with CPTs representing a probability distribution
  * instead of a single conditional probability),
@@ -33,6 +31,8 @@ import unbbayes.util.longtask.LongTaskProgressChangedEvent;
  * (accordingly to the value we just sampled),
  * propagate ({@link IterativeSecondOrderJunctionTreeAlgorithm#propagate()}), 
  * sample another node, and so on.
+ * It involves exact inference (because it delegates to {@link IterativeSecondOrderJunctionTreeAlgorithm}), 
+ * so it may not scale so well to large complex network structure.
  * @author Shou Matsumoto
  * @see unbbayes.io.CountCompatibleNetIO
  */
