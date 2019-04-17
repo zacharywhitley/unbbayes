@@ -22,6 +22,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.discretize.sample.ISampler;
 import unbbayes.datamining.discretize.sample.TriangularDistributionSampler;
+import unbbayes.io.CSVMultiEvidenceIO;
 
 /**
  * @author Shou Matsumoto
@@ -170,7 +171,7 @@ public class DiscretizationTest {
 				numThresholds = maxBinThreshold;
 			}
 			
-			discretization.discretizeAttribute(attribute, numThresholds);
+			discretization.transformAttribute(attribute, numThresholds);
 			attribute = dataSet.getAttribute(attributeIndex);
 			
 			assertEquals(attribute.getAttributeName(), Attribute.NOMINAL, attribute.getAttributeType());
@@ -344,7 +345,7 @@ public class DiscretizationTest {
 				numThresholds = maxBinThreshold;
 			}
 			
-			discretization.discretizeAttribute(attribute, numThresholds);
+			discretization.transformAttribute(attribute, numThresholds);
 			attribute = dataSet.getAttribute(attributeIndex);
 			
 			assertEquals(attribute.getAttributeName(), Attribute.NOMINAL, attribute.getAttributeType());
@@ -493,7 +494,7 @@ public class DiscretizationTest {
 					numThresholds = maxBinThreshold;
 				}
 				
-				sampler.discretizeAttribute(attribute, numThresholds);
+				sampler.transformAttribute(attribute, numThresholds);
 				attribute = dataSet.getAttribute(attributeIndex);
 				
 				assertEquals(file.getName() + ", " + attribute.getAttributeName(), Attribute.NUMERIC, attribute.getAttributeType());
@@ -520,11 +521,15 @@ public class DiscretizationTest {
 	public final void testTriangularDistributionSamplerFreqBatch2() throws Exception {
 		
 		int expectedNumData = 3582;
-		int expectedNumAttributes = 55;
-		String regexAttributeNotToSave = "wPrev_.+";
+		int expectedNumAttributes = 54; //54 observables, no uid
+//		String regexAttributeNotToSave = "wPrev_.+";
+		String prefixAttributeToSave = "wNext_";
 		
 		File folder = new File(getClass().getResource("samplesFreq2/").toURI());
 //		folder = new File(getClass().getResource("samplesRange/").toURI());
+		
+		// columns to append at right of output file
+		File fileToAppend = new File(getClass().getResource("recordsToAppend.txt").toURI());;
 		
 		assertTrue(folder.exists());
 		assertTrue(folder.isDirectory());
@@ -536,7 +541,7 @@ public class DiscretizationTest {
 			assertTrue(file.getName().endsWith(".txt"));
 			
 			// append suffix to output file name
-			String outFileName = file.getName().replace(".txt", "_triangular_2.txt");
+			String outFileName = file.getName().replace(".txt", "_triangular.txt");
 			File outputFile = new File(outFileName);
 			outputFile.delete();
 			
@@ -634,7 +639,10 @@ public class DiscretizationTest {
 				Attribute attribute = dataSet.getAttribute(attributeIndex);
 				AttributeStats stat = stats[attributeIndex];
 				
-				if (!attribute.getAttributeName().matches(regexAttributeNotToSave)) {
+//				if (!attribute.getAttributeName().matches(regexAttributeNotToSave)) {
+//					attributeIndexesToSave.add(attributeIndex);
+//				}
+				if (attribute.getAttributeName().startsWith(prefixAttributeToSave)) {
 					attributeIndexesToSave.add(attributeIndex);
 				}
 				
@@ -648,7 +656,8 @@ public class DiscretizationTest {
 					numThresholds = maxBinThreshold;
 				}
 				
-				sampler.discretizeAttribute(attribute, numThresholds);
+				// the method name is discretize, but sampler actually does the opposite
+				sampler.transformAttribute(attribute, numThresholds);
 				attribute = dataSet.getAttribute(attributeIndex);
 				
 				assertEquals(file.getName() + ", " + attribute.getAttributeName(), Attribute.NUMERIC, attribute.getAttributeType());
@@ -662,6 +671,14 @@ public class DiscretizationTest {
 			// save output
 			FileController.getInstance().saveInstanceSet(outputFile, dataSet, indexesToSave , false);
 			assertTrue(outputFile.getName(), outputFile.exists());
+			
+			// append data files
+			if (fileToAppend != null) {
+				// append suffix to output file name
+				File appendedOutput = new File(outFileName.replace(".txt", ".csv"));
+				appendedOutput.delete();
+				CSVMultiEvidenceIO.appendEvidenceDataByColumn(outputFile, fileToAppend, appendedOutput, ',');
+			}
 			
 		}
 		
