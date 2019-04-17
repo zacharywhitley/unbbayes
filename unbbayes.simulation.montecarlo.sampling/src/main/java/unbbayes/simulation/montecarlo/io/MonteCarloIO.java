@@ -46,22 +46,50 @@ public class MonteCarloIO {
 	private byte[][] matrix;
 
 	private File file = null;
+	
+	private List<Node> sampledNodeOrder;
 
 //	private PrintStream ps;
 
+	/**
+	 * @param matrix :  data
+	 * @throws IOException
+	 * @deprecated use {@link #MonteCarloIO(byte[][], List)}
+	 */
+	@Deprecated
 	public MonteCarloIO(byte[][] matrix) throws IOException {
 		this.matrix = matrix;
+	}
+	
+	/**
+	 * @param matrix : data
+	 * @@param sampledNodeOrder
+	 *            The order the nodes were sampled.
+	 * @throws IOException
+	 */
+	public MonteCarloIO(byte[][] matrix, List<Node> sampledNodeOrder) throws IOException {
+		this(matrix);
+		this.sampledNodeOrder = sampledNodeOrder;
 	}
 
 	/**
 	 * Creates a txt file with the sampled states from the simulation.
 	 * 
-	 * @param sampledNodeOrder
-	 *            The order the nodes were sampled.
+	 * @param desiredNodeOrder : the order to print nodes (this will be the header).
+	 * If {@link #getSampledNodeOrder()} is null, then it will be assumed
+	 * that the samples were generated with this ordering of nodes.
+	 *            
 	 * @param pn
 	 *            The probabilistic network that was sampled.
 	 */
-	public void makeFile(List<Node> sampledNodeOrder) {
+	public void makeFile(List<Node> desiredNodeOrder) {
+		
+		// get the order of nodes that were used for sampling
+		List<Node> sampledNodeOrder = getSampledNodeOrder();
+		if (sampledNodeOrder == null) {
+			// if none, then consider this as the ordering of nodes used at sampling
+			sampledNodeOrder = desiredNodeOrder;
+		}
 		
 		PrintStream ps;
 		try {
@@ -69,13 +97,17 @@ public class MonteCarloIO {
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-		makeFirstLine(ps, sampledNodeOrder);
+		makeFirstLine(ps, desiredNodeOrder);
 		Node node;
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < sampledNodeOrder.size(); j++) {
-				node = sampledNodeOrder.get(j);
-				ps.print(node.getStateAt(matrix[i][j]));
-				if (j != sampledNodeOrder.size() - 1) {
+		for (int row = 0; row < matrix.length; row++) {
+			for (int desiredNodeIndex = 0; desiredNodeIndex < desiredNodeOrder.size(); desiredNodeIndex++) {
+				node = desiredNodeOrder.get(desiredNodeIndex);
+				int sampledNodeIndex = sampledNodeOrder.indexOf(node);
+				if (sampledNodeIndex < 0) {
+					throw new IllegalArgumentException("Node " + node + " not found in list of nodes originally used in sampling.");
+				}
+				ps.print(node.getStateAt(matrix[row][sampledNodeIndex]));
+				if (desiredNodeIndex != desiredNodeOrder.size() - 1) {
 					ps.print('\t');
 				} else {
 					ps.println();
@@ -84,12 +116,12 @@ public class MonteCarloIO {
 		}
 	}
 
-	protected void makeFirstLine(PrintStream ps, List<Node> sampledNodeOrder) {
+	protected void makeFirstLine(PrintStream ps, List<Node> desiredNodeOrder) {
 		Node node;
-		for (int i = 0; i < sampledNodeOrder.size(); i++) {
-			node = sampledNodeOrder.get(i);
+		for (int i = 0; i < desiredNodeOrder.size(); i++) {
+			node = desiredNodeOrder.get(i);
 			ps.print(node.getName());
-			if (i != sampledNodeOrder.size() - 1) {
+			if (i != desiredNodeOrder.size() - 1) {
 				ps.print('\t');
 			} else {
 				ps.println();
@@ -135,6 +167,20 @@ public class MonteCarloIO {
 	 */
 	public void setFile(File file) {
 		this.file = file;
+	}
+
+	/**
+	 * @return the sampledNodeOrder
+	 */
+	public List<Node> getSampledNodeOrder() {
+		return sampledNodeOrder;
+	}
+
+	/**
+	 * @param sampledNodeOrder the sampledNodeOrder to set
+	 */
+	public void setSampledNodeOrder(List<Node> sampledNodeOrder) {
+		this.sampledNodeOrder = sampledNodeOrder;
 	}
 
 }

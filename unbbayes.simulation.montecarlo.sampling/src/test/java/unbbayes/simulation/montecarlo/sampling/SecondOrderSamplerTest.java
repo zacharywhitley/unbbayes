@@ -236,9 +236,12 @@ public class SecondOrderSamplerTest {
 		
 		// the sampler to test
 		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
+		sampler.setToClearCacheOnStart(false);
 		
 		// generate multiple results
 		for (int iteration = 0; iteration < numResults; iteration++) {
+			sampler.forceClearCache();
+			
 			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_Greedy_" + iteration + ".txt");
 			outFile.delete();
 			
@@ -314,9 +317,9 @@ public class SecondOrderSamplerTest {
 			
 			
 			// store all generated samples
-			MonteCarloIO io = new MonteCarloIO(samplesToSave);
+			MonteCarloIO io = new MonteCarloIO(samplesToSave, sampler.getSamplingNodeOrderQueue());
 			io.setFile(outFile);
-			io.makeFile(sampler.getSamplingNodeOrderQueue());
+			io.makeFile(net.getNodes());
 			assertTrue(outFile.exists());
 			
 		}	// end of iteration for each output file

@@ -199,13 +199,19 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 				stateIntervalCache.put(node.getName(), stateCache);
 				
 				if (interval != null) {
-					if (interval.getKey() <= 0
-							&& interval.getValue() <= 0) {
-						// this is the specia state "zero"\
-						if (recordAsNumber == 0f) {
+//					if (interval.getKey() <= 0
+//							&& interval.getValue() <= 0) {
+//						// this is the specia state "zero"\
+//						if (recordAsNumber == 0f) {
+//							return stateIndex;
+//						}
+//					}
+					if (interval.getKey().floatValue() >= interval.getValue().floatValue()) {
+						if (recordAsNumber == interval.getValue().floatValue()) {
 							return stateIndex;
 						}
 					}
+					
 					// label was an interval. Check if value is within interval
 					if (interval.getKey() < recordAsNumber
 							&& recordAsNumber <= interval.getValue()) {

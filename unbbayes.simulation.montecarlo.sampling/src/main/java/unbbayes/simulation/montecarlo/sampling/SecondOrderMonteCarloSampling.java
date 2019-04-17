@@ -1,14 +1,14 @@
 package unbbayes.simulation.montecarlo.sampling;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.io.CountCompatibleNetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.DirichletSampler;
 
 
@@ -29,6 +29,11 @@ import unbbayes.util.DirichletSampler;
 public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 
 	private float initialVirtualCounts = 1f;
+	
+	private Map<ProbabilisticNode, Map<Integer, DirichletSampler>> dirichletCacheForParentStates 
+								= new HashMap<ProbabilisticNode, Map<Integer,DirichletSampler>>();
+
+	private boolean isToClearCacheOnStart = true;
 
 	/**
 	 * Default constructor kept visible for easy inheritance
@@ -36,6 +41,28 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 	 */
 	public SecondOrderMonteCarloSampling() {}
 	
+	public void start(ProbabilisticNetwork pn , int nTrials, long elapsedTimeMillis) {
+		
+		if (isToClearCacheOnStart) {
+			this.forceClearCache();
+		}
+		
+		// run ordinary monte carlo after cache is clear
+		super.start(pn, nTrials, elapsedTimeMillis);
+	}
+	
+	/**
+	 * Forces cache to be cleared
+	 * @see #getDirichletCacheForParentStates()
+	 */
+	public void forceClearCache() {
+		// clear cache
+		Map<ProbabilisticNode, Map<Integer, DirichletSampler>> cache = getDirichletCacheForParentStates();
+		if (cache != null) {
+			cache.clear();
+		}
+	}
+
 	/**
 	 * Samples a single CPT from Dirichlet distributions
 	 * of the second order bayes net, and then perform standard monte-carlo
@@ -50,13 +77,14 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 			
 			ProbabilisticNode node = (ProbabilisticNode)samplingNodeOrderQueue.get(i);
 			
+			
 			if (node.hasEvidence()) {
 				// If it is an evidence node, then we do not need to sample it.
 				sampledStates[i] = node.getEvidence();
 			} else {
-				this.sampleCPT(node, this.pn);
-				// sample based on probability mass function
 				List<Integer> parentsIndexes = getParentsIndexesInQueue(node);
+				this.sampleCPT(node, this.pn, parentsIndexes, sampledStates);
+				// sample based on probability mass function
 				double[] pmf = getProbabilityMassFunction(sampledStates, parentsIndexes, node);
 				sampledStates[i] = getState(pmf);
 			}
@@ -73,10 +101,12 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 	 * specified in count tables (parameters of Dirichlet-multinomial distribution)
 	 * which should be accessible from {@link unbbayes.prs.bn.ProbabilisticNetwork#getProperty(String)},
 	 * with the property name being {@link CountCompatibleNetIO#DEFAULT_COUNT_TABLE_PREFIX} + {@link unbbayes.prs.INode#getName()}.
-	 * @param node
-	 * @param net
+	 * @param node : node of cpt to be updated
+	 * @param net : net containing node and reference to count table
+	 * @param parentsIndexes : indexes of parents in the current samples. It is assumed that parents were sampled already
+	 * @param sampledStates : current samples. States of parents will be referred
 	 */
-	protected void sampleCPT(ProbabilisticNode node, ProbabilisticNetwork net) {
+	protected void sampleCPT(ProbabilisticNode node, ProbabilisticNetwork net, List<Integer> parentsIndexes, int[] sampledStates) {
 		
 		if (net == null) {
 			throw new NullPointerException("Network must be specified.");
@@ -101,49 +131,112 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 					+ " but index was " + countTable.indexOfVariable(node));
 		}
 		
+		// extract cpt to overwrite with new sample
+		PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
+		
+		// code assumes that indexes of variables in count table and cpt are the same 
+		if (table.getVariablesSize() != countTable.getVariablesSize()) {
+			throw new IllegalArgumentException("Current version assumes that the node which owns a potential/count have same number of parents, but found incompatible node " + node);
+		}
+		for (int i = 0; i < table.getVariablesSize(); i++) {
+			if (!table.getVariableAt(i).equals(countTable.getVariableAt(i))) {
+				throw new IllegalArgumentException("Current version assumes that potential/count tables have variables, "
+						+ "but found incompatible table for " + node
+						+ " in index " + i);
+			}
+		}
+		
+		// use a coordinate to access table, 
+		// because I'll only sample conditional probability given current states of parents in sample
+		int[] coord = table.getMultidimensionalCoord(0);
+		for(int parentInd = 0 ; parentInd < parentsIndexes.size(); parentInd++){				
+			Integer nodeIndex = parentsIndexes.get(parentInd);
+			coord[table.indexOfVariable(samplingNodeOrderQueue.get(nodeIndex))] = sampledStates[nodeIndex];								
+		}
+		
 		// initialize list to be filled with dirichlet distribution of CPT (separated by each combination of states of parent nodes)
-		List<DirichletSampler> dirichletByParentState = new ArrayList<DirichletSampler>();
+//		List<DirichletSampler> dirichletByParentState = new ArrayList<DirichletSampler>();
 		
 		// iterate on cells of the count table as cell = base cell + offset (the offset is relative to states of owner node).
 		// Count table contains absolute frequency (as opposed to probabilities -- relative frequencies)
 		// of states of owner node given states of parents
-		for (int baseCellIndex = 0; baseCellIndex < countTable.tableSize(); ) {
-			
+//		for (int baseCellIndex = 0; baseCellIndex < countTable.tableSize(); ) {
+//			
+//			// instantiate dirichlet distribution with the counts we found in current table
+//			// parameters of a dirichlet distribution are usually represented with greek alphas in the literature
+//			// number of parameters of dirichlet is equal to number of states of the associated random variable
+//			double[] alphas = new double[node.getStatesSize()];		
+//			for (int stateOffset = 0; stateOffset < alphas.length; stateOffset++) {
+//				alphas[stateOffset] = getInitialVirtualCounts() + countTable.getValue(baseCellIndex + stateOffset);
+//			}
+//			DirichletSampler dirichlet = new DirichletSampler(alphas);
+//			dirichletByParentState.add(dirichlet);
+//			
+//			// skip to next cell in which the state of CPT owner (current node) is 0 again
+//			baseCellIndex += node.getStatesSize();
+//		}
+		
+		// get from cache if present
+		Map<ProbabilisticNode, Map<Integer, DirichletSampler>> cache = getDirichletCacheForParentStates();
+		if (cache == null) {
+			cache = new HashMap<ProbabilisticNode, Map<Integer,DirichletSampler>>();
+			setDirichletCacheForParentStates(cache);
+		}
+		Map<Integer, DirichletSampler> mapInCache = cache.get(node);
+		if (mapInCache == null) {
+			mapInCache = new HashMap<Integer, DirichletSampler>();
+			cache.put(node, mapInCache);
+		}
+		int firstCellInCPTColumn = table.getLinearCoord(coord);
+		DirichletSampler dirichlet = mapInCache.get(firstCellInCPTColumn);
+		
+		if (dirichlet == null) {
 			// instantiate dirichlet distribution with the counts we found in current table
 			// parameters of a dirichlet distribution are usually represented with greek alphas in the literature
-			// number of parameters of dirichlet is equal to number of states of the associated random variable
+			// number of parameters of dirichlet is equal to number of states of the associated random variable.
 			double[] alphas = new double[node.getStatesSize()];		
-			for (int stateOffset = 0; stateOffset < alphas.length; stateOffset++) {
-				alphas[stateOffset] = getInitialVirtualCounts() + countTable.getValue(baseCellIndex + stateOffset);
+			// only instantiate dirichlet for current states of parents (so only instantiate 1 dirichlet dist)
+			for (int state = 0; state < alphas.length; state++) {
+				// index zero of coord represents the node itself. 
+				// Other indexes were set with values of parents in sample
+				coord[0] = state;	
+				
+				alphas[state] = getInitialVirtualCounts() + countTable.getValue(coord);
+				
 			}
-			DirichletSampler dirichlet = new DirichletSampler(alphas);
-			dirichletByParentState.add(dirichlet);
 			
-			// skip to next cell in which the state of CPT owner (current node) is 0 again
-			baseCellIndex += node.getStatesSize();
+			dirichlet = new DirichletSampler(alphas);
+			
+			// update cache
+			mapInCache.put(firstCellInCPTColumn, dirichlet);
 		}
-		
-
-		// extract cpt to overwrite with new sample
-		PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
-		
 		
 		// iterate on number of combination of states of parent nodes 
 		// (this number is equal to number of Dirichlet objects in the list)
-		for (int dirichletListIndex = 0; dirichletListIndex < dirichletByParentState.size(); dirichletListIndex++) {
+//		for (int dirichletListIndex = 0; dirichletListIndex < dirichletByParentState.size(); dirichletListIndex++) {
+//			
+//			// sample a conditional probability from respective dirichlet dist
+//			DirichletSampler dirichlet = dirichletByParentState.get(dirichletListIndex);
+//			double[] sampleConditionalProb = dirichlet.sample();
+//			
+//			// corresponding cell in table is the base cell index (see code below) + offset
+//			int baseCellIndex = dirichletListIndex * node.getStatesSize();
+//			for (int stateOffset = 0; stateOffset < sampleConditionalProb.length; stateOffset++) {
+//				// overwrite cpt by accessing cells by base + offset
+//				table.setValue(baseCellIndex + stateOffset, (float)sampleConditionalProb[stateOffset]);
+//			}
+//			
+//		}	// end of iteration for each combination of states of parent nodes
+		
+		// update cpt with sample of dirichlet
+		double[] sampleConditionalProb = dirichlet.sample();
+		for (int state = 0; state < sampleConditionalProb.length; state++) {
+			// index zero of coord represents the node itself. 
+			// Other indexes were set with values of parents in sample
+			coord[0] = state;	
 			
-			// sample a conditional probability from respective dirichlet dist
-			DirichletSampler dirichlet = dirichletByParentState.get(dirichletListIndex);
-			double[] sampleConditionalProb = dirichlet.sample();
-			
-			// corresponding cell in table is the base cell index (see code below) + offset
-			int baseCellIndex = dirichletListIndex * node.getStatesSize();
-			for (int stateOffset = 0; stateOffset < sampleConditionalProb.length; stateOffset++) {
-				// overwrite cpt by accessing cells by base + offset
-				table.setValue(baseCellIndex + stateOffset, (float)sampleConditionalProb[stateOffset]);
-			}
-			
-		}	// end of iteration for each combination of states of parent nodes
+			table.setValue(coord, (float)sampleConditionalProb[state]);
+		}
 		
 	}
 
@@ -167,6 +260,51 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 	 */
 	public void setInitialVirtualCounts(float initialVirtualCounts) {
 		this.initialVirtualCounts = initialVirtualCounts;
+	}
+
+	/**
+	 * @return the cache of dirichlet sampler for a node 
+	 * and state of parents in a sample.
+	 * The integer is the 1st cell in cpt associated with a given combination
+	 * of states of parents (values of such states are values in current sample).
+	 * Cache is cleared in the beginning of {@link #start(ProbabilisticNetwork, int, long)}
+	 * @see #sampleCPT(ProbabilisticNode, ProbabilisticNetwork, List, int[])
+	 * @see #isToClearCacheOnStart()
+	 */
+	protected Map<ProbabilisticNode, Map<Integer, DirichletSampler>> getDirichletCacheForParentStates() {
+		return dirichletCacheForParentStates;
+	}
+
+	/**
+	 * @param dirichletCacheForParentStates :
+	 * the cache of dirichlet sampler for a node 
+	 * and state of parents in a sample.
+	 * The integer is the 1st cell in cpt associated with a given combination
+	 * of states of parents (values of such states are values in current sample).
+	 * Cache is cleared in the beginning of {@link #start(ProbabilisticNetwork, int, long)}
+	 * @see #sampleCPT(ProbabilisticNode, ProbabilisticNetwork, List, int[])
+	 * @see #isToClearCacheOnStart()
+	 */
+	protected void setDirichletCacheForParentStates(
+			Map<ProbabilisticNode, Map<Integer, DirichletSampler>> dirichletCacheForParentStates) {
+		this.dirichletCacheForParentStates = dirichletCacheForParentStates;
+	}
+
+	/**
+	 * @return if true, {@link #getDirichletCacheForParentStates()}
+	 * will be reset at beginning of {@link #start(ProbabilisticNetwork, int, long)}
+	 */
+	public boolean isToClearCacheOnStart() {
+		return isToClearCacheOnStart;
+	}
+
+	/**
+	 * @param isToClearCacheOnStart :
+	 * if true, {@link #getDirichletCacheForParentStates()}
+	 * will be reset at beginning of {@link #start(ProbabilisticNetwork, int, long)}
+	 */
+	public void setToClearCacheOnStart(boolean isToClearCacheOnStart) {
+		this.isToClearCacheOnStart = isToClearCacheOnStart;
 	}
 
 }
