@@ -58,6 +58,7 @@ public class TextModeRunner {
 	
 	private boolean isLogEnabled = false;
 	private ISSBNGenerator ssbngenerator;
+	private SSBN lastGeneratedSSBN;
 	
 	public TextModeRunner() {
 		super();
@@ -160,6 +161,7 @@ public class TextModeRunner {
 		getSSBNgenerator().setLogEnabled(this.isLogEnabled());
 		
 		SSBN ssbn = getSSBNgenerator().generateSSBN(listQueries, knowledgeBase); 
+		setLastGeneratedSSBN(ssbn);
 		
 		// the following is done in getSSBNgenerator().generateSSBN(listQueries, knowledgeBase); 
 //		ssbn.compileAndInitializeSSBN();
@@ -498,6 +500,23 @@ public class TextModeRunner {
 	public void setLogEnabled(boolean isLogEnabled) {
 		SSBNDebugInformationUtil.setEnabled(isLogEnabled);
 		this.isLogEnabled = isLogEnabled;
+	}
+
+	/**
+	 * @return the SSBN generated at last execution of 
+	 * {@link #executeQueryLaskeyAlgorithm(List, KnowledgeBase, MultiEntityBayesianNetwork)}
+	 */
+	public SSBN getLastGeneratedSSBN() {
+		return lastGeneratedSSBN;
+	}
+
+	/**
+	 * @param lastGeneratedSSBN :
+	 * the SSBN generated at last execution of 
+	 * {@link #executeQueryLaskeyAlgorithm(List, KnowledgeBase, MultiEntityBayesianNetwork)}
+	 */
+	public void setLastGeneratedSSBN(SSBN lastGeneratedSSBN) {
+		this.lastGeneratedSSBN = lastGeneratedSSBN;
 	}
 
 	
