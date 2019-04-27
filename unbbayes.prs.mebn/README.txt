@@ -29,7 +29,7 @@ Go to \mvn_lib\unbbayes\jpf>
 mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
 
 Go to \mvn_lib\unbbayes\unbbayes>
-mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes-4.1.0.jar
+mvn install:install-file -Dpackaging=jar -Dfile=unbbayes-4.1.0.jar -DpomFile=pom.xml
 
 
 

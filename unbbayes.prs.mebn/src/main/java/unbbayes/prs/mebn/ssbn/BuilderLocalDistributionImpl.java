@@ -15,6 +15,7 @@ import unbbayes.prs.mebn.ssbn.cptgeneration.ICPTForSSBNNodeGeneratorBuilder;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.ApplicationPropertyHolder;
+import unbbayes.util.Debug;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 
@@ -32,7 +33,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			clearSimpleSSBNNodeListAtLPD = Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
 					BuilderLocalDistributionImpl.class.getCanonicalName()+".clearSimpleSSBNNodeListAtLPD").toString());
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(BuilderLocalDistributionImpl.class, "Warning: failed to load application property clearSimpleSSBNNodeListAtLPD. Ignoring... " + e.getMessage(), e);
 		}
 	}
 	
