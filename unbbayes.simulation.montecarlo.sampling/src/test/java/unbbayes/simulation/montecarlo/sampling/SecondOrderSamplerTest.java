@@ -206,127 +206,6 @@ public class SecondOrderSamplerTest {
 		
 	}
 	
-	/**
-	 * Test method for {@link SecondOrderMonteCarloSampling#start(ProbabilisticNetwork, int, long)}.
-	 * Only one sample will be generated for each evidence read from a file.
-	 * @throws URISyntaxException 
-	 * @throws IOException 
-	 * @throws InterruptedException 
-	 */
-	@SuppressWarnings("deprecation")
-	@Test
-	public final void testMCStartWithFileEvidence2Greedy() throws IOException, InterruptedException, URISyntaxException {
-		
-		// number of outputs to generate
-		int numResults = 10;
-		
-		// files to read
-		URL netURL = getClass().getResource("./learnedDBNFreq50_2_K2[-1.5].net");
-		assertNotNull(netURL);
-		URL evidenceURL = getClass().getResource("./testEvidence2.txt");
-		assertNotNull(evidenceURL);
-		
-		
-		// load net
-		final ProbabilisticNetwork net = (ProbabilisticNetwork) 
-				new CountCompatibleNetIO().load(new File(netURL.toURI()));
-		assertNotNull(net);
-		assertNotNull(net.getNodes());
-		assertEquals(54, net.getNodes().size());	// 55 vars minus the uid
-		
-		// the sampler to test
-		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
-		sampler.setToClearCacheOnStart(false);
-		
-		// generate multiple results
-		for (int iteration = 0; iteration < numResults; iteration++) {
-			sampler.forceClearCache();
-			
-			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_Greedy_" + iteration + ".txt");
-			outFile.delete();
-			
-			// read evidence file;
-			CSVMultiEvidenceIO evidenceIO = new CSVMultiEvidenceIO();
-			evidenceIO.loadEvidences(new File(evidenceURL.toURI()), net);
-			List<Map<String, Integer>> allEvidences = evidenceIO.getLastEvidencesRead();
-			assertNotNull(allEvidences);
-			
-			// iterate on evidences in order to generate sample for each evidence
-			byte[][] samplesToSave = new byte[allEvidences.size()][net.getNodeCount()];
-			for (int evidenceIndex = 0; evidenceIndex < samplesToSave.length; evidenceIndex++) {
-				Map<String, Integer> evidences  = allEvidences.get(evidenceIndex);
-				// each record is a data entry
-				// Accessing Values by name of the node
-				Map<String, Integer> evidenceBackup = new HashMap<String,Integer>();
-				for (String evidenceNodeName : evidences.keySet()) {
-					
-					// check consistency
-					Node node = net.getNode(evidenceNodeName);
-					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, node);
-					
-					// extract the state of the evidence
-					Integer evidenceState = evidences.get(evidenceNodeName);
-					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, evidenceState);
-					assertTrue(evidenceNodeName + ", row " + evidenceIndex, evidenceState >= 0);
-					
-					// insert the evidence
-					assertTrue(evidenceNodeName + ", row " + evidenceIndex, node instanceof ProbabilisticNode);
-					((ProbabilisticNode)node).initMarginalList();
-					((ProbabilisticNode)node).addFinding(evidenceState);
-					evidenceBackup.put(node.getName(), evidenceState);
-					
-					// make sure evidence was inserted
-					assertTrue(evidenceNodeName + ", row " + evidenceIndex, ((ProbabilisticNode)node).hasEvidence());
-					assertEquals(evidenceNodeName + ", row " + evidenceIndex, evidenceState.intValue(), ((ProbabilisticNode)node).getEvidence());
-					
-				}
-				
-				// sample 1 row with current evidence
-				sampler.start(net, 1, Long.MAX_VALUE);
-				
-				// extract the generated single sample
-				byte[][] singleSample = sampler.getSampledStatesMatrix();
-				assertNotNull("row = " + evidenceIndex, singleSample);
-				assertEquals("row = " + evidenceIndex, 1, singleSample.length);
-				assertEquals("row = " + evidenceIndex, net.getNodeCount(), singleSample[0].length);
-				
-				// store the current sample
-				for (int nodeIndex = 0; nodeIndex < singleSample[0].length; nodeIndex++) {
-					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
-				}
-				
-				
-				// make sure all evidence nodes have evidences;
-				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
-					
-					Node evidenceNode = net.getNode(entry.getKey());
-					
-					assertTrue(evidenceNode.toString(), evidenceNode instanceof ProbabilisticNode);
-					assertTrue(((ProbabilisticNode)evidenceNode).hasEvidence());
-					assertEquals(evidenceNode.toString(), entry.getValue().intValue(), ((ProbabilisticNode)evidenceNode).getEvidence());
-				}
-				
-				
-				// don't use same evidence in next iteration
-				net.resetEvidences();
-				for (Node node : net.getNodes()) {
-					assertTrue(node.toString(), !((TreeVariable)node).hasEvidence());
-				}
-				
-			}	// end of loop for CSV
-			
-			
-			// store all generated samples
-			MonteCarloIO io = new MonteCarloIO(samplesToSave, sampler.getSamplingNodeOrderQueue());
-			io.setFile(outFile);
-			io.makeFile(net.getNodes());
-			assertTrue(outFile.exists());
-			
-		}	// end of iteration for each output file
-		
-		
-	}
-	
 	
 	
 	/**
@@ -620,5 +499,371 @@ public class SecondOrderSamplerTest {
 		
 		assertTrue(new File("testSamplesThread.txt").exists());
 	}
+	
+	
+
+	/**
+	 * Test method for {@link SecondOrderMonteCarloSampling#start(ProbabilisticNetwork, int, long)}.
+	 * Only one sample will be generated for each evidence read from a file.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	@SuppressWarnings("deprecation")
+	@Test
+	public final void testMCStartWithFileEvidence2Greedy() throws IOException, InterruptedException, URISyntaxException {
+		
+		// number of outputs to generate
+		int numResults = 10;
+		
+		// files to read
+		URL netURL = getClass().getResource("./learnedDBNFreq50_2_K2[-1.5].net");
+		assertNotNull(netURL);
+		URL evidenceURL = getClass().getResource("./testEvidence2.txt");
+		assertNotNull(evidenceURL);
+		
+		
+		// load net
+		final ProbabilisticNetwork net = (ProbabilisticNetwork) 
+				new CountCompatibleNetIO().load(new File(netURL.toURI()));
+		assertNotNull(net);
+		assertNotNull(net.getNodes());
+		assertEquals(54, net.getNodes().size());	// 55 vars minus the uid
+		
+		// the sampler to test
+		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
+		sampler.setToClearCacheOnStart(false);
+		
+		// generate multiple results
+		for (int iteration = 0; iteration < numResults; iteration++) {
+			sampler.forceClearCache();
+			
+			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_Greedy_" + iteration + ".txt");
+			outFile.delete();
+			
+			// read evidence file;
+			CSVMultiEvidenceIO evidenceIO = new CSVMultiEvidenceIO();
+			evidenceIO.loadEvidences(new File(evidenceURL.toURI()), net);
+			List<Map<String, Integer>> allEvidences = evidenceIO.getLastEvidencesRead();
+			assertNotNull(allEvidences);
+			
+			// iterate on evidences in order to generate sample for each evidence
+			byte[][] samplesToSave = new byte[allEvidences.size()][net.getNodeCount()];
+			for (int evidenceIndex = 0; evidenceIndex < samplesToSave.length; evidenceIndex++) {
+				Map<String, Integer> evidences  = allEvidences.get(evidenceIndex);
+				// each record is a data entry
+				// Accessing Values by name of the node
+				Map<String, Integer> evidenceBackup = new HashMap<String,Integer>();
+				for (String evidenceNodeName : evidences.keySet()) {
+					
+					// check consistency
+					Node node = net.getNode(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, node);
+					
+					// extract the state of the evidence
+					Integer evidenceState = evidences.get(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, evidenceState);
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, evidenceState >= 0);
+					
+					// insert the evidence
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, node instanceof ProbabilisticNode);
+					((ProbabilisticNode)node).initMarginalList();
+					((ProbabilisticNode)node).addFinding(evidenceState);
+					evidenceBackup.put(node.getName(), evidenceState);
+					
+					// make sure evidence was inserted
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, ((ProbabilisticNode)node).hasEvidence());
+					assertEquals(evidenceNodeName + ", row " + evidenceIndex, evidenceState.intValue(), ((ProbabilisticNode)node).getEvidence());
+					
+				}
+				
+				// sample 1 row with current evidence
+				sampler.start(net, 1, Long.MAX_VALUE);
+				
+				// extract the generated single sample
+				byte[][] singleSample = sampler.getSampledStatesMatrix();
+				assertNotNull("row = " + evidenceIndex, singleSample);
+				assertEquals("row = " + evidenceIndex, 1, singleSample.length);
+				assertEquals("row = " + evidenceIndex, net.getNodeCount(), singleSample[0].length);
+				
+				// store the current sample
+				for (int nodeIndex = 0; nodeIndex < singleSample[0].length; nodeIndex++) {
+					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
+				}
+				
+				
+				// make sure all evidence nodes have evidences;
+				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
+					
+					Node evidenceNode = net.getNode(entry.getKey());
+					
+					assertTrue(evidenceNode.toString(), evidenceNode instanceof ProbabilisticNode);
+					assertTrue(((ProbabilisticNode)evidenceNode).hasEvidence());
+					assertEquals(evidenceNode.toString(), entry.getValue().intValue(), ((ProbabilisticNode)evidenceNode).getEvidence());
+				}
+				
+				
+				// don't use same evidence in next iteration
+				net.resetEvidences();
+				for (Node node : net.getNodes()) {
+					assertTrue(node.toString(), !((TreeVariable)node).hasEvidence());
+				}
+				
+			}	// end of loop for CSV
+			
+			
+			// store all generated samples
+			MonteCarloIO io = new MonteCarloIO(samplesToSave, sampler.getSamplingNodeOrderQueue());
+			io.setFile(outFile);
+			io.makeFile(net.getNodes());
+			assertTrue(outFile.exists());
+			
+		}	// end of iteration for each output file
+		
+		
+	}
+	
+	/**
+	 * Test method for {@link SecondOrderMonteCarloSampling#start(ProbabilisticNetwork, int, long)}.
+	 * Only one sample will be generated for each evidence read from a file.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	@SuppressWarnings("deprecation")
+	@Test
+	public final void testMCStartWithFileEvidence3aGreedy() throws Exception {
+		
+		// number of outputs to generate
+		int numResults = 10;
+		
+		// files to read
+		URL netURL = getClass().getResource("./learnedDBNFreq50_3a_K2[-1.5].net");
+		assertNotNull(netURL);
+		URL evidenceURL = getClass().getResource("./testEvidence3a.txt");
+		assertNotNull(evidenceURL);
+		
+		
+		// load net
+		final ProbabilisticNetwork net = (ProbabilisticNetwork) 
+				new CountCompatibleNetIO().load(new File(netURL.toURI()));
+		assertNotNull(net);
+		assertNotNull(net.getNodes());
+		assertEquals(56, net.getNodes().size());	// 57 vars minus the uid
+		
+		// the sampler to test
+		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
+		sampler.setToClearCacheOnStart(false);
+		
+		// generate multiple results
+		for (int iteration = 0; iteration < numResults; iteration++) {
+			sampler.forceClearCache();
+			
+			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_3a_Greedy_" + iteration + ".txt");
+			outFile.delete();
+			
+			// read evidence file;
+			CSVMultiEvidenceIO evidenceIO = new CSVMultiEvidenceIO();
+			evidenceIO.loadEvidences(new File(evidenceURL.toURI()), net);
+			List<Map<String, Integer>> allEvidences = evidenceIO.getLastEvidencesRead();
+			assertNotNull(allEvidences);
+			
+			// iterate on evidences in order to generate sample for each evidence
+			byte[][] samplesToSave = new byte[allEvidences.size()][net.getNodeCount()];
+			for (int evidenceIndex = 0; evidenceIndex < samplesToSave.length; evidenceIndex++) {
+				Map<String, Integer> evidences  = allEvidences.get(evidenceIndex);
+				// each record is a data entry
+				// Accessing Values by name of the node
+				Map<String, Integer> evidenceBackup = new HashMap<String,Integer>();
+				for (String evidenceNodeName : evidences.keySet()) {
+					
+					// check consistency
+					Node node = net.getNode(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, node);
+					
+					// extract the state of the evidence
+					Integer evidenceState = evidences.get(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, evidenceState);
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, evidenceState >= 0);
+					
+					// insert the evidence
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, node instanceof ProbabilisticNode);
+					((ProbabilisticNode)node).initMarginalList();
+					((ProbabilisticNode)node).addFinding(evidenceState);
+					evidenceBackup.put(node.getName(), evidenceState);
+					
+					// make sure evidence was inserted
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, ((ProbabilisticNode)node).hasEvidence());
+					assertEquals(evidenceNodeName + ", row " + evidenceIndex, evidenceState.intValue(), ((ProbabilisticNode)node).getEvidence());
+					
+				}
+				
+				// sample 1 row with current evidence
+				sampler.start(net, 1, Long.MAX_VALUE);
+				
+				// extract the generated single sample
+				byte[][] singleSample = sampler.getSampledStatesMatrix();
+				assertNotNull("row = " + evidenceIndex, singleSample);
+				assertEquals("row = " + evidenceIndex, 1, singleSample.length);
+				assertEquals("row = " + evidenceIndex, net.getNodeCount(), singleSample[0].length);
+				
+				// store the current sample
+				for (int nodeIndex = 0; nodeIndex < singleSample[0].length; nodeIndex++) {
+					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
+				}
+				
+				
+				// make sure all evidence nodes have evidences;
+				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
+					
+					Node evidenceNode = net.getNode(entry.getKey());
+					
+					assertTrue(evidenceNode.toString(), evidenceNode instanceof ProbabilisticNode);
+					assertTrue(((ProbabilisticNode)evidenceNode).hasEvidence());
+					assertEquals(evidenceNode.toString(), entry.getValue().intValue(), ((ProbabilisticNode)evidenceNode).getEvidence());
+				}
+				
+				
+				// don't use same evidence in next iteration
+				net.resetEvidences();
+				for (Node node : net.getNodes()) {
+					assertTrue(node.toString(), !((TreeVariable)node).hasEvidence());
+				}
+				
+			}	// end of loop for CSV
+			
+			
+			// store all generated samples
+			MonteCarloIO io = new MonteCarloIO(samplesToSave, sampler.getSamplingNodeOrderQueue());
+			io.setFile(outFile);
+			io.makeFile(net.getNodes());
+			assertTrue(outFile.exists());
+			
+		}	// end of iteration for each output file
+		
+		
+	}
+	
+	/**
+	 * Test method for {@link SecondOrderMonteCarloSampling#start(ProbabilisticNetwork, int, long)}.
+	 * Only one sample will be generated for each evidence read from a file.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	@SuppressWarnings("deprecation")
+	@Test
+	public final void testMCStartWithFileEvidence3bGreedy() throws Exception {
+		
+		// number of outputs to generate
+		int numResults = 10;
+		
+		// files to read
+		URL netURL = getClass().getResource("./learnedDBNFreq50_3b_K2[-1.5].net");
+		assertNotNull(netURL);
+		URL evidenceURL = getClass().getResource("./testEvidence3b.txt");
+		assertNotNull(evidenceURL);
+		
+		
+		// load net
+		final ProbabilisticNetwork net = (ProbabilisticNetwork) 
+				new CountCompatibleNetIO().load(new File(netURL.toURI()));
+		assertNotNull(net);
+		assertNotNull(net.getNodes());
+		assertEquals(37, net.getNodes().size());	// 38 vars minus the uid
+		
+		// the sampler to test
+		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
+		sampler.setToClearCacheOnStart(false);
+		
+		// generate multiple results
+		for (int iteration = 0; iteration < numResults; iteration++) {
+			sampler.forceClearCache();
+			
+			File outFile = new File("[" + System.currentTimeMillis() + "]samples_Freq50_DBN_3b_Greedy_" + iteration + ".txt");
+			outFile.delete();
+			
+			// read evidence file;
+			CSVMultiEvidenceIO evidenceIO = new CSVMultiEvidenceIO();
+			evidenceIO.loadEvidences(new File(evidenceURL.toURI()), net);
+			List<Map<String, Integer>> allEvidences = evidenceIO.getLastEvidencesRead();
+			assertNotNull(allEvidences);
+			
+			// iterate on evidences in order to generate sample for each evidence
+			byte[][] samplesToSave = new byte[allEvidences.size()][net.getNodeCount()];
+			for (int evidenceIndex = 0; evidenceIndex < samplesToSave.length; evidenceIndex++) {
+				Map<String, Integer> evidences  = allEvidences.get(evidenceIndex);
+				// each record is a data entry
+				// Accessing Values by name of the node
+				Map<String, Integer> evidenceBackup = new HashMap<String,Integer>();
+				for (String evidenceNodeName : evidences.keySet()) {
+					
+					// check consistency
+					Node node = net.getNode(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, node);
+					
+					// extract the state of the evidence
+					Integer evidenceState = evidences.get(evidenceNodeName);
+					assertNotNull(evidenceNodeName + ", row " + evidenceIndex, evidenceState);
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, evidenceState >= 0);
+					
+					// insert the evidence
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, node instanceof ProbabilisticNode);
+					((ProbabilisticNode)node).initMarginalList();
+					((ProbabilisticNode)node).addFinding(evidenceState);
+					evidenceBackup.put(node.getName(), evidenceState);
+					
+					// make sure evidence was inserted
+					assertTrue(evidenceNodeName + ", row " + evidenceIndex, ((ProbabilisticNode)node).hasEvidence());
+					assertEquals(evidenceNodeName + ", row " + evidenceIndex, evidenceState.intValue(), ((ProbabilisticNode)node).getEvidence());
+					
+				}
+				
+				// sample 1 row with current evidence
+				sampler.start(net, 1, Long.MAX_VALUE);
+				
+				// extract the generated single sample
+				byte[][] singleSample = sampler.getSampledStatesMatrix();
+				assertNotNull("row = " + evidenceIndex, singleSample);
+				assertEquals("row = " + evidenceIndex, 1, singleSample.length);
+				assertEquals("row = " + evidenceIndex, net.getNodeCount(), singleSample[0].length);
+				
+				// store the current sample
+				for (int nodeIndex = 0; nodeIndex < singleSample[0].length; nodeIndex++) {
+					samplesToSave[evidenceIndex][nodeIndex] = singleSample[0][nodeIndex];
+				}
+				
+				
+				// make sure all evidence nodes have evidences;
+				for (Entry<String, Integer> entry : evidenceBackup.entrySet()) {
+					
+					Node evidenceNode = net.getNode(entry.getKey());
+					
+					assertTrue(evidenceNode.toString(), evidenceNode instanceof ProbabilisticNode);
+					assertTrue(((ProbabilisticNode)evidenceNode).hasEvidence());
+					assertEquals(evidenceNode.toString(), entry.getValue().intValue(), ((ProbabilisticNode)evidenceNode).getEvidence());
+				}
+				
+				
+				// don't use same evidence in next iteration
+				net.resetEvidences();
+				for (Node node : net.getNodes()) {
+					assertTrue(node.toString(), !((TreeVariable)node).hasEvidence());
+				}
+				
+			}	// end of loop for CSV
+			
+			
+			// store all generated samples
+			MonteCarloIO io = new MonteCarloIO(samplesToSave, sampler.getSamplingNodeOrderQueue());
+			io.setFile(outFile);
+			io.makeFile(net.getNodes());
+			assertTrue(outFile.exists());
+			
+		}	// end of iteration for each output file
+		
+		
+	}
+	
 
 }
