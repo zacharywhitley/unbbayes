@@ -635,7 +635,9 @@ public class SecondOrderSamplerTest {
 	public final void testMCStartWithFileEvidence3aGreedy() throws Exception {
 		
 		// number of outputs to generate
-		int numResults = 10;
+		int numResults = 70;	// default = 10
+		float virtualCountMultiplier = .4f;	// default = 1
+		float initialCount = 2f;	// default = 1
 		
 		// files to read
 		URL netURL = getClass().getResource("./learnedDBNFreq50_3a_K2[-1.5].net");
@@ -654,6 +656,8 @@ public class SecondOrderSamplerTest {
 		// the sampler to test
 		SecondOrderMonteCarloSampling sampler = new SecondOrderMonteCarloSampling();
 		sampler.setToClearCacheOnStart(false);
+		sampler.setInitialVirtualCounts(initialCount);
+		sampler.setVirtualCountsMultiplier(virtualCountMultiplier);
 		
 		// generate multiple results
 		for (int iteration = 0; iteration < numResults; iteration++) {
