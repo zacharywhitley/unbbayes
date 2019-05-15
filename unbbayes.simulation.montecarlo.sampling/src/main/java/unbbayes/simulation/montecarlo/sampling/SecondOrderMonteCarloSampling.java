@@ -35,6 +35,8 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 
 	private boolean isToClearCacheOnStart = true;
 
+	private float virtualCountsMultiplier = 1f;
+
 	/**
 	 * Default constructor kept visible for easy inheritance
 	 * and to be compatible with plug-in architecture.
@@ -201,7 +203,7 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 				// Other indexes were set with values of parents in sample
 				coord[0] = state;	
 				
-				alphas[state] = getInitialVirtualCounts() + countTable.getValue(coord);
+				alphas[state] = (getInitialVirtualCounts() + countTable.getValue(coord)) * getVirtualCountsMultiplier();
 				
 			}
 			
@@ -305,6 +307,25 @@ public class SecondOrderMonteCarloSampling extends MatrixMonteCarloSampling {
 	 */
 	public void setToClearCacheOnStart(boolean isToClearCacheOnStart) {
 		this.isToClearCacheOnStart = isToClearCacheOnStart;
+	}
+
+	/**
+	 * @return value to be multiplied to virtual counts
+	 * in order to artificially adjust variance
+	 * of the Dirichlet distribution. Default is 1.
+	 */
+	public float getVirtualCountsMultiplier() {
+		return virtualCountsMultiplier;
+	}
+
+	/**
+	 * @param virtualCountsMultiplier :
+	 * value to be multiplied to virtual counts
+	 * in order to artificially adjust variance
+	 * of the Dirichlet distribution. Default is 1.
+	 */
+	public void setVirtualCountsMultiplier(float virtualCountsMultiplier) {
+		this.virtualCountsMultiplier = virtualCountsMultiplier;
 	}
 
 }
