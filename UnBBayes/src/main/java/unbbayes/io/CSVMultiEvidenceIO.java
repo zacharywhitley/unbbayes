@@ -72,6 +72,8 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 	private List<Map<String, Integer>> lastEvidencesRead;
 
 	private Map<String, Map<String, Entry<Float, Float>>> stateIntervalCache = new HashMap<String, Map<String,Entry<Float,Float>>>();
+	
+	private static String unknownValue = "?";
 
 	/**
 	 * Default constructor kept public for easy extension
@@ -463,6 +465,163 @@ public class CSVMultiEvidenceIO implements IEvidenceIO {
 		
 		out.close();
 		
+	}
+	
+	
+	/**
+	 * Merges two files by column name.
+	 * Output file will contain columns of both input files,
+	 * but if inputs have common columns then those in
+	 * primaryInput will be prioritized (except
+	 * for cells containing unspecified values 
+	 * marked with {@link #getUnknownValue()})
+	 * @param primaryInput: input to consider as a main.
+	 * Values in this file will overwrite values in the other input
+	 * Values in this file will have higher priority, except
+	 * for unknown values marked with "?".
+	 * @param inputToOverwrite : input to append to right columns
+	 * @param output : appended file.
+	 * @param delimiter : character to use as delimiter in output.
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 * @see #getUnknownValue()
+	 */
+	public static void mergeEvidenceDataByColumn(File primaryInput, File inputToOverwrite, File output, char delimiter) throws IOException {
+		
+		// printer of output file
+		PrintStream out = new PrintStream(new FileOutputStream(output));
+		
+		if (primaryInput == null) {
+			primaryInput = inputToOverwrite;
+			inputToOverwrite = null;
+		}
+		
+		// read evidence files;
+		CSVParser csvParserMaster = new CSVParser(new BufferedReader(new FileReader(primaryInput)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		CSVParser csvParserSlave = null;
+		if (inputToOverwrite != null) {
+			csvParserSlave = new CSVParser(new BufferedReader(new FileReader(inputToOverwrite)), DEFAULT_EVIDENCE_FILE_FORMAT);
+		}
+		
+		// get headers
+		ArrayList<Entry<String, Integer>> headerMaster = new ArrayList<Entry<String, Integer>>(csvParserMaster.getHeaderMap().entrySet());
+		// make sure headers are sorted by column number
+		Collections.sort(headerMaster, new Comparator<Entry<String, Integer>>() {
+			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
+				return o1.getValue() - o2.getValue();
+			}
+		});
+		ArrayList<Entry<String, Integer>> headerSlave = null;
+		if (csvParserSlave != null) {
+			headerSlave = new ArrayList<Entry<String, Integer>>();
+			for (Entry<String, Integer> entry : csvParserSlave.getHeaderMap().entrySet()) {
+				// if column is not present in master, then consider this column
+				if (!csvParserMaster.getHeaderMap().containsKey(entry.getKey())) {
+					headerSlave.add(entry);
+				}
+			}
+			// make sure headers are sorted by column number
+			Collections.sort(headerSlave, new Comparator<Entry<String, Integer>>() {
+				public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
+					return o1.getValue() - o2.getValue();
+				}
+			});
+		}
+		
+		
+		// write headers
+		for (Iterator<Entry<String, Integer>> it = headerMaster.iterator(); it.hasNext();) {
+			out.print(it.next().getKey());
+			if (it.hasNext()) {
+				out.print(delimiter);
+			}
+		}
+		// write headers of right file. Make sure last entry do not have delimiter
+		if (headerSlave != null) {
+			out.print(delimiter);
+			for (Iterator<Entry<String, Integer>> it = headerSlave.iterator(); it.hasNext();) {
+				out.print(it.next().getKey());
+				if (it.hasNext()) {
+					out.print(delimiter);
+				}
+			}
+		}
+		out.println();
+		
+		// iterate on both inputs
+		List<CSVRecord> recordsMaster = csvParserMaster.getRecords();
+		List<CSVRecord> recordsSlave = null;
+		if (csvParserSlave != null) {
+			recordsSlave = csvParserSlave.getRecords();
+		}
+		int numRecords = recordsMaster.size();
+		if (csvParserSlave != null) {
+			numRecords = Math.min(recordsMaster.size(), recordsSlave.size());
+		}
+		for (int row = 0; row < numRecords; row++) {
+			
+			// write master
+			for (Iterator<Entry<String, Integer>> itHeader = headerMaster.iterator(); itHeader.hasNext(); ) {
+				Entry<String, Integer> currentHeader = itHeader.next();
+				String value = recordsMaster.get(row).get(currentHeader.getValue().intValue());
+				if (value.equals(getUnknownValue())) {
+					// use value from slave file instead
+					value = recordsSlave.get(row).get(currentHeader.getKey());
+				}
+				out.print(value);
+				if (itHeader.hasNext()) {
+					out.print(delimiter);
+				}
+			}
+			
+			// write slave
+			if (recordsSlave != null) {
+				out.print(delimiter);
+				for (Iterator<Entry<String, Integer>> itHeader = headerSlave.iterator(); itHeader.hasNext(); ) {
+					String value = recordsSlave.get(row).get(itHeader.next().getValue().intValue());
+					out.print(value);
+					if (itHeader.hasNext()) {
+						out.print(delimiter);
+					}
+				}
+			}
+			
+			out.println();
+			
+		}	// end of loop for CSV}
+		
+		if (csvParserSlave != null) {
+			csvParserSlave.close();
+		}
+		csvParserMaster.close();
+		
+		out.close();
+		
+	}
+
+	/**
+	 * @return string value to be considered as
+	 * unknown. If cells in files provided 
+	 * in {@link #mergeEvidenceDataByColumn(File, File, File, char)}
+	 * contain this value, then 
+	 * the cell will be virtually considered as empty.
+	 * Default value is "?."
+	 */
+	public static String getUnknownValue() {
+		return unknownValue;
+	}
+
+	/**
+	 * @param unknownValue :
+	 * string value to be considered as
+	 * unknown. If cells in files provided 
+	 * in {@link #mergeEvidenceDataByColumn(File, File, File, char)}
+	 * contain this value, then 
+	 * the cell will be virtually considered as empty.
+	 * Default value is "?.
+	 */
+	public static void setUnknownValue(String unknownValue) {
+		CSVMultiEvidenceIO.unknownValue = unknownValue;
 	}
 	
 }
