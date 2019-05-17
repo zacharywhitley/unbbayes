@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -60,7 +61,11 @@ public class UbfIO2Simple extends UbfIO {
 	
 
 	private ResourceBundle resource = 
-		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.io.mebn.resources.IoUbfResources.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(
+				unbbayes.io.mebn.resources.IoUbfResources.class.getName(),
+				Locale.getDefault(), 
+				getClass().getClassLoader()
+			);
 	
 	/**
 	 * The default constructor is only made public because of plug-in's requirements.
@@ -800,7 +805,7 @@ public class UbfIO2Simple extends UbfIO {
 		}
 		
 		// Placeholder for Variable type names
-		String varType = null;
+//		String varType = null;
 		
 		// Create .owl placeholder
 		String noExtensionFileName = file.getPath().substring(0,file.getPath().lastIndexOf(this.getUBFFileExtension()));
@@ -813,6 +818,7 @@ public class UbfIO2Simple extends UbfIO {
 		try {
 			this.getProwlIO().saveMebn(prowlFile,mebn);
 		} catch(Exception e) {
+			out.close();
 			throw new IOException("Failed  to write associated PR-OWL (.owl) file: " + e.getLocalizedMessage(), e);
 		}
 		
@@ -855,8 +861,8 @@ public class UbfIO2Simple extends UbfIO {
 		//	Save MFrags and Nodes declarations
 		out.println();
 		out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFragsNodes"));
-		for (Iterator iter = mebn.getDomainMFragList().iterator(); iter.hasNext();) {
-			MFrag mfrag = (MFrag) iter.next();
+		for (Iterator<MFrag> iter = mebn.getDomainMFragList().iterator(); iter.hasNext();) {
+			MFrag mfrag = iter.next();
 			out.println();
 			out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFrags"));
 			out.println(this.getToken("MFragDeclarator")  
@@ -944,8 +950,8 @@ public class UbfIO2Simple extends UbfIO {
 					out.println();
 					out.println(this.getToken("CommentInitiator") + resource.getString("UBFContextNodes"));
 					out.println();
-					for (Iterator iterator = mfrag.getContextNodeList().iterator(); iterator.hasNext();) {
-						ContextNode node = (ContextNode) iterator.next();
+					for (Iterator<ContextNode> iterator = mfrag.getContextNodeList().iterator(); iterator.hasNext();) {
+						ContextNode node = iterator.next();
 						out.println();				
 						out.println(this.getToken("NodeDeclarator")  
 								+ this.getToken("AttributionSeparator") +  node.getName());
@@ -973,8 +979,8 @@ public class UbfIO2Simple extends UbfIO {
 					out.println();
 					out.println(this.getToken("CommentInitiator") + resource.getString("UBFOrdinalVars"));
 					out.println();
-					for (Iterator iterator = mfrag.getOrdinaryVariableList().iterator(); iterator.hasNext();) {
-						OrdinaryVariable node = (OrdinaryVariable) iterator.next();
+					for (Iterator<OrdinaryVariable> iterator = mfrag.getOrdinaryVariableList().iterator(); iterator.hasNext();) {
+						OrdinaryVariable node =  iterator.next();
 						out.println();				
 						out.println(this.getToken("NodeDeclarator")  
 								+ this.getToken("AttributionSeparator") +  node.getName());
@@ -1025,6 +1031,8 @@ public class UbfIO2Simple extends UbfIO {
 			}
 		}
 		
+		out.close();
+		
 	}
 
 	/**
@@ -1045,8 +1053,8 @@ public class UbfIO2Simple extends UbfIO {
 		}
 
 		// input node (MFrag seems not to provide a method to find an input node by name)
-		for (Iterator iter = mfrag.getInputNodeList().iterator(); iter.hasNext();) {
-			node = (Node) iter.next();
+		for (Iterator<InputNode> iter = mfrag.getInputNodeList().iterator(); iter.hasNext();) {
+			node = iter.next();
 			if (name.equals(node.getName())) {
 				return node;
 			}
@@ -1087,7 +1095,7 @@ public class UbfIO2Simple extends UbfIO {
 	 */
 	public MebnIO getProwlIO() {
 		if (prowlIO == null) {
-			prowlIO = OWLAPICompatiblePROWLIO.newInstance();
+			prowlIO = OWLAPICompatiblePROWL2IO.newInstance();
 		}
 		return prowlIO;
 	}

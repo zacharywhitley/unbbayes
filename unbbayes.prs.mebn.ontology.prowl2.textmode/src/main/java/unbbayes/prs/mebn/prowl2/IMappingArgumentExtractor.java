@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.prowl2;
 
 import java.util.Map;
@@ -22,11 +19,11 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 public interface IMappingArgumentExtractor {
 	
 	/** If {@link #getOWLPropertiesOfArgumentsOfSelectedNode(INode, MultiEntityBayesianNetwork, OWLOntology)} returns a map to this code, the mapping is EXPLICITLY set to "undefined" */
-	public static final Integer UNDEFINED_CODE = new Integer(0);	
+	public static final Integer UNDEFINED_CODE = Integer.valueOf(0);	
 	/** If {@link #getOWLPropertiesOfArgumentsOfSelectedNode(INode, MultiEntityBayesianNetwork, OWLOntology)} returns a map to this code, the mapping was a "isSubjectIn" */
-	public static final Integer SUBJECT_CODE = new Integer(1);
+	public static final Integer SUBJECT_CODE = Integer.valueOf(1);
 	/** If {@link #getOWLPropertiesOfArgumentsOfSelectedNode(INode, MultiEntityBayesianNetwork, OWLOntology)} returns a map to this code, the mapping was a "isObjectIn" */
-	public static final Integer OBJECT_CODE = new Integer(2);
+	public static final Integer OBJECT_CODE = Integer.valueOf(2);
 	
 	/**
 	 * This method obtains all mapped arguments from the selected node.
@@ -37,5 +34,5 @@ public interface IMappingArgumentExtractor {
 	 * is explicitly undefined ({@link #UNDEFINED_CODE}), a subject of the owl property ({@link #SUBJECT_CODE}) 
 	 * or object ({@link #OBJECT_CODE}), or something else (any other code).
 	 */
-	public Map<Argument, Map<OWLProperty<?, ?>, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode(INode selectedNode, MultiEntityBayesianNetwork mebn, OWLOntology ontology);
+	public Map<Argument, Map<OWLProperty, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode(INode selectedNode, MultiEntityBayesianNetwork mebn, OWLOntology ontology);
 }

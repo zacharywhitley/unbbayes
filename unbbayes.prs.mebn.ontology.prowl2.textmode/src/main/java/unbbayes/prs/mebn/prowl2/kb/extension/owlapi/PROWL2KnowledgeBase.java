@@ -56,7 +56,8 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 	public PROWL2KnowledgeBase() {
 		super();
 		// change prowl class extractor so that it uses PROWL2-specific routines
-		this.setNonPROWLClassExtractor(NonPROWL2ClassExtractorImpl.getInstance());
+//		this.setNonPROWLClassExtractor(NonPROWL2ClassExtractorImpl.getInstance());
+		// the above is already done in superclass
 	}
 	/**
 	 * This is just a call to {@link #getInstance(null, MultiEntityBayesianNetwork, IMEBNMediator)}

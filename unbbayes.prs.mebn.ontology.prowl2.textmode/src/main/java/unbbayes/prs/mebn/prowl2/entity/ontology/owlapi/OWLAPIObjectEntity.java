@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.prowl2.entity.ontology.owlapi;
 
 import java.util.Collection;
@@ -26,7 +23,6 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
@@ -70,6 +66,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	 * The namespace/prefix of the new owl entity will be created accordingly to {@link #getOntologyPrefixManager(OWLOntology)}.
 	 * @throws TypeException
 	 */
+	@SuppressWarnings("deprecation")
 	public OWLAPIObjectEntity(String name, MultiEntityBayesianNetwork mebn, boolean isToCreateOWLEntity) throws TypeException {
 		super(name, mebn.getTypeContainer());
 		this.setMEBN(mebn);
@@ -190,6 +187,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	 * @param associatedOWLEntity : the OWL entity in the {@link #getOWLOntology()} which represents this Object entity.
 	 * A MEBN object entity and an OWL entity are different things, but this field makes the connection.
 	 */
+	@SuppressWarnings("deprecation")
 	public void setAssociatedOWLEntity(OWLEntity associatedOWLEntity) {
 		this.associatedOWLEntity = associatedOWLEntity;
 		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, this, associatedOWLEntity.getIRI());
@@ -283,6 +281,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#setName(java.lang.String)
 	 * @see ObjectEntityContainer#renameEntity(ObjectEntity, String)
 	 */
+	@SuppressWarnings("deprecation")
 	public void setName(String name) throws TypeAlreadyExistsException {
 		if (this.getName().equalsIgnoreCase(name)) {
 			Debug.println(getClass(), "Not renaming " + getName() + ", because the name is the same.");
@@ -311,7 +310,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		if (ontology.containsClassInSignature(temporaryOWLClass.getIRI(), true)) {
 			Debug.println(getClass(), "OWL class " + associatedOWLEntity + " is being renamed to " + temporaryOWLClass + ", which already exists.");
 			// remove old class
-			OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
+//			OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
+			OWLEntityRemover remover = new OWLEntityRemover(Collections.singleton(ontology));
 			remover.visit(associatedOWLEntity.asOWLClass());
 			manager.applyChanges(remover.getChanges());	// commit
 		} else {
@@ -456,8 +456,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#delete()
 	 */
+	@SuppressWarnings("deprecation")
 	protected void delete() throws TypeDoesNotExistException {
-		// TODO Auto-generated method stub
 		super.delete();
 		// now, delete the associated owl entity
 		
@@ -474,7 +474,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		}
 		OWLOntologyManager manager = ontology.getOWLOntologyManager();	// the manager of the owl ontology
 		
-		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
+//		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
+		OWLEntityRemover remover = new OWLEntityRemover(Collections.singleton(ontology));
 		remover.visit(associatedOWLEntity.asOWLClass());
 		manager.applyChanges(remover.getChanges());	// commit
 		

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.prowl2.entity.ontology.owlapi;
 
 import java.util.ArrayList;
@@ -85,6 +82,7 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	/**
 	 * @param mebn the mebn to set
 	 */
+	@SuppressWarnings("deprecation")
 	public void setMEBN(MultiEntityBayesianNetwork mebn) {
 		if (this.mebn == mebn) {
 			return;	// there is no change
@@ -219,7 +217,8 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		
 		// check if we can retrieve some builder from getObjectEntityBuilder()
 		IObjectEntityBuilder builder = getObjectEntityBuilder();
-		// check if builder is compatible. TODO see if there is a better way of doing this check.
+		// check if builder is compatible. 
+		// TODO see if there is a better way of doing this check.
 		if (builder != null && (builder instanceof IOWLAPIObjectEntityBuilder)) {
 			// return the instance itself
 			return (IOWLAPIObjectEntityBuilder) builder;
@@ -242,6 +241,7 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#addEntity(unbbayes.prs.mebn.entity.ObjectEntity, unbbayes.prs.mebn.entity.ObjectEntity)
 	 */
+	@SuppressWarnings("deprecation")
 	protected void addEntity(ObjectEntity entity, ObjectEntity parentObjectEntity) {
 		super.addEntity(entity, parentObjectEntity);
 		
@@ -293,8 +293,14 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		
 		// extract the OWL class of entity, but in order to do so, extract the IRI first
 		IRI entityIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), entity);
+		// extract ontology namespace
+		String namespaceWithSharp = ontology.getOntologyID().getOntologyIRI().get().getNamespace();
+		if (!namespaceWithSharp.endsWith("#")) {
+			// append # at end of namespace if not present already
+			namespaceWithSharp += "#";
+		}
 		if (entityIRI == null) {	// generate IRI if it was not mapped in mebn
-			entityIRI = IRI.create(ontology.getOntologyID().getOntologyIRI().getStart() + "#" + entity.getName());
+			entityIRI = IRI.create(namespaceWithSharp + entity.getName());
 			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), entity, entityIRI);
 		}
 		OWLClassExpression entityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(entityIRI);
@@ -302,7 +308,7 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		// extract the OWL class of entity
 		IRI parentIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), parentObjectEntity);
 		if (parentIRI == null) {	// generate IRI if it was not mapped in mebn
-			parentIRI = IRI.create(ontology.getOntologyID().getOntologyIRI().getStart() + "#" + parentObjectEntity.getName());
+			parentIRI = IRI.create(namespaceWithSharp + parentObjectEntity.getName());
 			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), parentObjectEntity, parentIRI);
 		}
 		OWLClassExpression parentClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(parentIRI);

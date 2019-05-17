@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.prowl2;
 
 import java.util.Collection;
@@ -29,11 +26,9 @@ public class DefaultMappingArgumentExtractor implements
 
 	/**
 	 * The default constructor is not visible in public.
-	 * Use {@link #newInstance()} instead
+	 * Use {@link #newInstance()} instead.
 	 */
-	protected DefaultMappingArgumentExtractor() {
-		// TODO Auto-generated constructor stub
-	}
+	protected DefaultMappingArgumentExtractor() {}
 	
 	/**
 	 * Use this method as default constructor
@@ -47,11 +42,12 @@ public class DefaultMappingArgumentExtractor implements
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.mebn.IMappingArgumentExtractor#getOWLPropertiesOfArgumentsOfSelectedNode(unbbayes.prs.INode, unbbayes.prs.mebn.MultiEntityBayesianNetwork, org.semanticweb.owlapi.model.OWLOntology)
 	 */
-	public Map<Argument, Map<OWLProperty<?, ?>, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode( 
+	@SuppressWarnings("deprecation")
+	public Map<Argument, Map<OWLProperty, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode( 
 			INode selectedNode, MultiEntityBayesianNetwork mebn,
 			OWLOntology ontology) {
 		
-		Map<Argument, Map<OWLProperty<?, ?>, Integer>> ret = new HashMap<Argument, Map<OWLProperty<?, ?>,Integer>>();
+		Map<Argument, Map<OWLProperty, Integer>> ret = new HashMap<Argument, Map<OWLProperty,Integer>>();
 		
 		// assert
 		if (mebn == null || selectedNode == null) {
@@ -100,9 +96,9 @@ public class DefaultMappingArgumentExtractor implements
 					// extract properties from IRI
 					for (IRI iri : iris) {
 						// add mapping to ret. If mapping exists, just add another entry
-						Map<OWLProperty<?, ?>, Integer> mapping = ret.get(argument);
+						Map<OWLProperty, Integer> mapping = ret.get(argument);
 						if (mapping == null) {
-							mapping = new HashMap<OWLProperty<?, ?>, Integer>();
+							mapping = new HashMap<OWLProperty, Integer>();
 						}
 						// check if iri is an object property or data property
 						if (ontology.containsDataPropertyInSignature(iri, true)) {
@@ -131,9 +127,9 @@ public class DefaultMappingArgumentExtractor implements
 					// extract properties from IRI
 					for (IRI iri : iris) {
 						// add mapping to ret. If mapping exists, just add another entry
-						Map<OWLProperty<?, ?>, Integer> mapping = ret.get(argument);
+						Map<OWLProperty, Integer> mapping = ret.get(argument);
 						if (mapping == null) {
-							mapping = new HashMap<OWLProperty<?, ?>, Integer>();
+							mapping = new HashMap<OWLProperty, Integer>();
 						}
 						// check if iri is an object property or data property
 						if (ontology.containsDataPropertyInSignature(iri, true)) {

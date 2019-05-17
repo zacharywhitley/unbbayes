@@ -357,6 +357,7 @@ public class OWLAPICompatiblePROWL2IO
 	 * (non-Javadoc)
 	 * @see unbbayes.io.mebn.owlapi.IOWLAPIOntologyUser#loadMEBNFromOntology(unbbayes.prs.mebn.MultiEntityBayesianNetwork, org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
 	 */
+	@SuppressWarnings("deprecation")
 	public void loadMEBNFromOntology(MultiEntityBayesianNetwork mebn, OWLOntology ontology, OWLReasoner reasoner) {
 		// assertion
 		if (mebn == null) {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.prowl2.kb.extension.owlapi;
 
 import java.io.File;
@@ -17,7 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-
+import org.apache.log4j.Logger;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -38,6 +35,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.PrefixManager;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -47,9 +45,9 @@ import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.io.mebn.prowl2.owlapi.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.prowl2.owlapi.INonPROWLClassExtractor;
 import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLClassExpressionParserFacade;
 import unbbayes.io.mebn.prowl2.owlapi.IPROWL2ModelUser;
-import unbbayes.io.mebn.prowl2.prowl2.owlapi.DefaultNonPROWLClassExtractor;
-import unbbayes.io.mebn.prowl2.prowl2.protege.ProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.NonPROWL2ClassExtractorImpl;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IResidentNode;
@@ -69,19 +67,15 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.TypeContainer;
-import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
-import unbbayes.prs.mebn.entity.ontology.owlapi.ProtegeOWLReasonerInfoAdapter;
+import unbbayes.prs.mebn.prowl2.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
-import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
-import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.prowl2.DefaultMappingArgumentExtractor;
 import unbbayes.prs.mebn.prowl2.IMappingArgumentExtractor;
 import unbbayes.prs.mebn.prowl2.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
-import unbbayes.util.Debug;
 
 /**
  * This knowledge base delegates inference to {@link OWLReasoner}.
@@ -94,6 +88,8 @@ import unbbayes.util.Debug;
  *
  */
 public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionParserFacade, IPROWL2ModelUser {
+	
+	private Logger logger = Logger.getLogger(getClass());
 
 	private List<IClearKBCommand> clearKBCommandList = new ArrayList<OWL2KnowledgeBase.IClearKBCommand>();
 	
@@ -135,6 +131,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	public IMappingArgumentExtractor DEFAULT_MAPPING_ARGUMENT_EXTRACTOR = DefaultMappingArgumentExtractor.newInstance();
 	
 	private IMappingArgumentExtractor mappingArgumentExtractor = DEFAULT_MAPPING_ARGUMENT_EXTRACTOR;
+	
+
+	private InferenceType[] defaultPrecomputedInferenceTypes = {
+			InferenceType.CLASS_HIERARCHY,
+			InferenceType.CLASS_ASSERTIONS,
+			InferenceType.DISJOINT_CLASSES,
+			InferenceType.OBJECT_PROPERTY_HIERARCHY,
+			InferenceType.OBJECT_PROPERTY_ASSERTIONS,
+			InferenceType.DATA_PROPERTY_ASSERTIONS
+		};
 
 	/**
 	 * The default constructor is only visible in order to allow inheritance
@@ -145,7 +151,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		try {
 			this.initialize();
 		} catch (Exception e) {
-			Debug.println(getClass(), "Error during initialization.", e);
+			getLogger().warn("Eager load/initialization failed. Postponing...", e);
 		}
 	}
 	
@@ -178,7 +184,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
 				}
 			}
-			public void undoCommand() {Debug.println(this.getClass(), "There is no undo for resetNonPROWLClassExtractor()");}
+			public void undoCommand() {getLogger().error("There is no undo for resetNonPROWLClassExtractor()");}
 		});
 		
 		// add resetCache() to the commands to be executed on clearKnowledgeBase()
@@ -186,11 +192,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			public void doCommand() {
 				resetCache();
 			}
-			public void undoCommand() {Debug.println(this.getClass(), "There is no undo for resetCache();");}
+			public void undoCommand() {getLogger().error("There is no undo for resetCache();");}
 		});
 		
 		this.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
-		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
+		this.setNonPROWLClassExtractor(NonPROWL2ClassExtractorImpl.getInstance());
 		this.resetCache();
 	}
 	
@@ -236,7 +242,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				try {
 					command.doCommand();
 				} catch (Exception e) {
-					Debug.println(this.getClass(), e.getMessage(), e);
+					getLogger().warn("Failed to clear knowledge base. This may add garbage to the model...", e);
 				}
 			}
 		}
@@ -280,17 +286,18 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#createEntityDefinition(unbbayes.prs.mebn.entity.ObjectEntity)
 	 */
+	@SuppressWarnings("deprecation")
 	public void createEntityDefinition(ObjectEntity entity) {
 		// ignore null elements
 		if (entity == null) {
-			Debug.println(this.getClass(), "Entity == null");
+			getLogger().warn("Entity == null");
 			return;
 		}
 		
 		// check cache
 		if (this.getEntityCache() != null) {
 			if (this.getEntityCache().get(entity) != null) {
-				Debug.println(this.getClass(), entity + " is cached already.");
+				getLogger().debug(entity + " is cached already.");
 				return;
 			}
 		}
@@ -307,10 +314,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		// create a new IRI if nothing was extracted
 		if (iri == null) {
-			Debug.println(this.getClass(), "No iri found for " + entity.getName() + ". Creating a new one from name.");
+			getLogger().debug("No iri found for " + entity.getName() + ". Creating a new one from name.");
 			iri = IRI.create(this.getDefaultOWLReasoner().getRootOntology().getOntologyID().getOntologyIRI().toString() + '#' + entity.getName());
 		}
-		Debug.println(this.getClass(), "IRI of entity " + entity + " = " + iri);
+		getLogger().debug("IRI of entity " + entity + " = " + iri);
 		
 		// create a new OWL class if it does not exist
 		if (!this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(iri, true)) {
@@ -342,45 +349,45 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public void resetCache() {
 		if (!isToResetCache()) {
-			Debug.println(this.getClass(), "isToResetCache == false. Ignoring request for resetting cache.");
+			getLogger().debug("isToResetCache == false. Ignoring request for resetting cache.");
 			return;
 		}
 		try {
 			this.setResidentNodeCache(new HashMap<ResidentNode, IRI>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setResidentNodeCache().", t);
+			getLogger().warn("Error when calling setResidentNodeCache(). Ignoring request...", t);
 		}
 		try {
 			this.setEntityCache(new HashMap<Entity, IRI>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setEntityCache().", t);
+			getLogger().warn("Error when calling setEntityCache(). Ignoring request...", t);
 		}
 		try {
 			this.setFindingCache(new HashMap<ResidentNode, Map<Collection<OVInstance>,StateLink>>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setFindingCache().", t);
+			getLogger().warn("Error when calling setFindingCache(). Ignoring request...", t);
 		}
 		try {
 			this.setTypeToIndividualsCache(new HashMap<String, List<String>>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setTypeToIndividualsCache().", t);
+			getLogger().warn("Error when calling setTypeToIndividualsCache(). Ignoring request...", t);
 		}
 		try {
 			this.setResidentNodeFindingCache(new HashMap<ResidentNode, Collection<RandomVariableFinding>>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setResidentNodeFindingCache().", t);
+			getLogger().warn("Error when calling setResidentNodeFindingCache(). Ignoring request...", t);
 		}
 		try {
 			// disable cache for owl class expressions
 //			this.setExpressionCache(null);
 			this.setExpressionCache(new HashMap<String, OWLClassExpression>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setExpressionCache().", t);
+			getLogger().warn("Error when calling setExpressionCache(). Ignoring request...", t);
 		}
 		try {
 			this.setSearchContextCache(new HashMap<ContextNode, Map<Collection<OVInstance>,SearchResult>>());
 		} catch (Throwable t) {
-			Debug.println(getClass(), "Error when calling setSearchContextCache().", t);
+			getLogger().warn("Error when calling setSearchContextCache(). Ignoring request...", t);
 		}
 		
 		// disable cache reset. Re-Enable it only when explicitly stated
@@ -391,11 +398,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#createRandomVariableDefinition(unbbayes.prs.mebn.ResidentNode)
 	 */
+	@SuppressWarnings("deprecation")
 	public void createRandomVariableDefinition(ResidentNode resident) {
 		
 		// initial assertion
 		if (resident == null) {
-			Debug.println(this.getClass(), "There was an attempt to create a random variable definition for a null resident node...");
+			getLogger().warn("There was an attempt to create a random variable definition for a null resident node...");
 			return;
 		}
 		
@@ -403,7 +411,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		if (this.getResidentNodeCache() != null) {
 			if (this.getResidentNodeCache().get(resident) != null) {
 				// the resident node is already cached.
-				Debug.println(this.getClass(), resident + " is cached already.");
+				getLogger().debug( resident + " is cached already.");
 				return;
 			}
 		}
@@ -417,16 +425,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		
 		IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), resident); // we always use the default MEBN instead of the one linked to resident node.
 		if (iri == null) {
-			Debug.println(this.getClass(), "The IRI is not registered. Creating new one...");
+			getLogger().debug("The IRI is not registered. Creating new one...");
 			// generate IRI "automagically"
 			iri = IRI.create(this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()).getDefaultPrefix() + resident.getName());
-			Debug.println(this.getClass(), "The new IRI for the OWL property related to node " + resident + " is " + iri);
+			getLogger().debug("The new IRI for the OWL property related to node " + resident + " is " + iri);
 			
 			// extract factory
 			OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
 			
 			// prepare variables to hold owl property
-			OWLProperty<?, ?> property = null;				// this is the property to be added
+			OWLProperty property = null;				// this is the property to be added
 			OWLAxiom addPropertyAxiom = null; 			// this is an axiom to add property into to ontology
 			OWLAxiom rangeAxiom = null;					// this is an axiom to set property's range
 
@@ -479,6 +487,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#insertEntityInstance(unbbayes.prs.mebn.entity.ObjectEntityInstance)
 	 */
+	@SuppressWarnings("deprecation")
 	public void insertEntityInstance(ObjectEntityInstance entityInstance) {
 		// initial assertion
 		if (entityInstance == null) {
@@ -547,6 +556,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#insertRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
 	 */
+	@SuppressWarnings("deprecation")
 	public void insertRandomVariableFinding( RandomVariableFinding randomVariableFinding) {
 		// TODO make this method smaller by creating multiple protected template methods
 //		return;
@@ -964,7 +974,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/**
 	 * This method reloads and synchronizes the reasoner instead of doing the actual loading of OWL ontologies.
-	 * This is in order to provide the unforeseen feature of synchronizing the reasoner using a button for loading KB from file
+	 * This is in order to provide the a feature for synchronizing the reasoner using a button for loading KB from file.
+	 * This method will invoke {@link #syncReasoner(OWLReasoner, boolean)}
+	 * for {@link #getDefaultOWLReasoner()}
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#loadModule(java.io.File, boolean)
 	 */
 	public void loadModule(File file, boolean findingModule) throws UBIOException {
@@ -972,42 +984,57 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		
 		// ignore file
 		
-		// TODO maybe we could call the I/O classes to actually reload the probabilistic part from the currently edited ontology (in order to provide a mean to edit the probabilistic part using the deterministic editor as well)
-		
-		// do nothing if it is already ok and not out of sync
-		if (this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus().equals(ReasonerStatus.INITIALIZED)) {
-			Debug.println(this.getClass(), ReasonerStatus.INITIALIZED.getDescription());
-			return;
-		}
-		
-		// reload reasoner
-		this.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(this.getOWLModelManager().getReasonerPreferences().getPrecomputedInferences());
-		
-		// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
-		for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
-			// TODO Stop using buzy waiting!!!
-			if (ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
-				// reasoner is not chosen...
-				Debug.println(this.getClass(), "No reasoner is chosen.");
-				break;
-			}
-			if (ReasonerStatus.INITIALIZED.equals(this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
-				// reasoner is ready now
-				break;
-			}
-			Debug.println(this.getClass(), "Waiting for reasoner initialization...");
-			try {
-				// sleep and try reasoner status after
-				Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
-			} catch (InterruptedException e) {
-				// a thread sleep should not break normal program flow...
-				Debug.println(getClass(), "Thread interrupted", e);
-			}
-		}
+		// resync reasoner if not synchronized already
+		// false := do not resync if synchronized already
+		this.syncReasoner(getDefaultOWLReasoner(), false);	
 		
 		// TODO make sure all individuals in same class hierarchy are disjoint
 		
 		// TODO reload Object entities to MEBN
+	}
+	
+
+	/**
+	 * Forces an OWL reasoner to sync
+	 * with  {@link #getDefaultPrecomputedInferenceTypes()}
+	 * as configuration.
+	 * @param reasoner : reasoner to sync
+	 * @param force: if true, this will force resync regardless of whether preprocessing was already performed
+	 * @see #loadModule(File, boolean)
+	 * @see #getDefaultPrecomputedInferenceTypes()
+	 */
+	public void syncReasoner(OWLReasoner reasoner, boolean force) {
+		
+		if (!force 
+				&& isSynchronized(reasoner)) {
+			getLogger().debug("Attempted to sync a reasoner which is already synchronized.");
+			return;
+		}
+		
+		reasoner.flush();
+		
+//		reasoner.precomputeInferences(InferenceType.values());	// sync everything
+		
+		// only synchronize elements that we use
+		reasoner.precomputeInferences(getDefaultPrecomputedInferenceTypes());
+	};
+
+	/**
+	 * @param reasoner 
+	 * @return true if reasoner is initialized
+	 * @see #syncReasoner(OWLReasoner)
+	 * @see #getDefaultPrecomputedInferenceTypes()
+	 */
+	public boolean isSynchronized(OWLReasoner reasoner) {
+		// we are assuming that #syncReasoner is used for sync, so check same pre-computed set
+		int numPrecomputedInferences = 0;
+		for (InferenceType inferenceType : getDefaultPrecomputedInferenceTypes()) {
+			if (reasoner.isPrecomputed(inferenceType)) {
+				numPrecomputedInferences++;
+			}
+		}
+		// consider it synchronized if the majority of the inference types were precomputed
+		return numPrecomputedInferences > (getDefaultPrecomputedInferenceTypes().length/2f);
 	}
 
 	/* (non-Javadoc)
@@ -4967,6 +4994,41 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public void setMappingArgumentExtractor(IMappingArgumentExtractor mappingArgumentExtractor) {
 		this.mappingArgumentExtractor = mappingArgumentExtractor;
+	}
+
+	/**
+	 * @return the logger
+	 */
+	public Logger getLogger() {
+		return logger;
+	}
+
+	/**
+	 * @param logger the logger to set
+	 */
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
+	/**
+	 * @return the types of inferences
+	 * to be synchronized in {@link #syncReasoner(OWLReasoner, boolean)}.
+	 * Use less elements for faster synchronization, but less accurate
+	 * reasoning.
+	 */
+	public InferenceType[] getDefaultPrecomputedInferenceTypes() {
+		return defaultPrecomputedInferenceTypes;
+	}
+
+	/**
+	 * @param defaultPrecomputedInferenceTypes :
+	 * the types of inferences
+	 * to be synchronized in {@link #syncReasoner(OWLReasoner, boolean)}.
+	 * Use less elements for faster synchronization, but less accurate
+	 * reasoning.
+	 */
+	public void setDefaultPrecomputedInferenceTypes(InferenceType[] defaultPrecomputedInferenceTypes) {
+		this.defaultPrecomputedInferenceTypes = defaultPrecomputedInferenceTypes;
 	}
 	
 }
